@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flyktig Tavla - Nedladdningsbar version</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .animate-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-50">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useRef, useEffect } = React;
+
+        // Enkel komponent för Lucide-ikoner eftersom vi kör via CDN
+        const Icon = ({ name, size = 20, className = "" }) => {
+            useEffect(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }, [name]);
+            return <i data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
+        };
+
+        function App() {
+            const [messages, setMessages] = useState([]);
+            const [newMessage, setNewMessage] = useState('');
+            const [boardTitle, setBoardTitle] = useState('Flyktig Tavla');
+            const [isEditingTitle, setIsEditingTitle] = useState(false);
+            const [file, setFile] = useState(null);
+            const [showShareModal, setShowShareModal] = useState(false);
+            const [copied, setCopied] = useState(false);
+            const [userCount, setUserCount] = useState(0);
+            const [roomId, setRoomId] = useState(null);
+            const socketRef = useRef(null);
+            const messagesEndRef = useRef(null);
+            const titleInputRef = useRef(null);
+
+            // Initialize Socket.io connection and room
+            useEffect(() => {
+                // Get or create room ID from URL hash
+                let currentRoomId = window.location.hash.slice(1);
+                if (!currentRoomId || currentRoomId.length === 0) {
+                    currentRoomId = Math.random().toString(36).slice(2, 8);
+                    window.location.hash = currentRoomId;
+                }
+                setRoomId(currentRoomId);
+
+                // Connect to server
+                const socket = io();
+                socketRef.current = socket;
+
+                socket.on('connect', () => {
+                    socket.emit('join-room', currentRoomId);
+                });
+
+                socket.on('room-state', (state) => {
+                    setMessages(state.messages || []);
+                    setUserCount(state.userCount || 0);
+                });
+
+                socket.on('new-message', (message) => {
+                    setMessages(prev => [...prev, message]);
+                    setTimeout(() => {
+                        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+                    }, 50);
+                });
+
+                socket.on('delete-message', (id) => {
+                    setMessages(prev => prev.filter(m => m.id !== id));
+                });
+
+                socket.on('clear-board', () => {
+                    setMessages([]);
+                });
+
+                socket.on('user-count', (count) => {
+                    setUserCount(count);
+                });
+
+                return () => {
+                    socket.disconnect();
+                };
+            }, []);
+
+            useEffect(() => {
+                document.title = boardTitle;
+            }, [boardTitle]);
+
+            useEffect(() => {
+                if (isEditingTitle && titleInputRef.current) {
+                    titleInputRef.current.focus();
+                    titleInputRef.current.select();
+                }
+            }, [isEditingTitle]);
+
+            const scrollToBottom = () => {
+                setTimeout(() => {
+                    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+                }, 50);
+            };
+
+            const handleSendMessage = (e) => {
+                if (e) e.preventDefault();
+                if (!newMessage.trim() && !file) return;
+
+                let fileData = null;
+                if (file) {
+                    fileData = {
+                        name: file.name,
+                        type: file.type,
+                        size: (file.size / 1024).toFixed(1) + " KB"
+                    };
+                }
+
+                const newMsg = {
+                    id: Date.now(),
+                    text: newMessage,
+                    file: fileData,
+                    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                };
+
+                // Send via Socket.io
+                if (socketRef.current) {
+                    socketRef.current.emit('new-message', newMsg);
+                }
+
+                setNewMessage('');
+                setFile(null);
+            };
+
+            const deleteMessage = (id) => {
+                if (socketRef.current) {
+                    socketRef.current.emit('delete-message', id);
+                }
+            };
+
+            const clearBoard = () => {
+                if (socketRef.current) {
+                    socketRef.current.emit('clear-board');
+                }
+            };
+
+            const copyToClipboard = () => {
+                const url = window.location.href;
+                navigator.clipboard.writeText(url).then(() => {
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                });
+            };
+
+            return (
+                <div className="flex flex-col h-screen text-slate-900">
+                    {/* Header */}
+                    <header className="bg-white border-b px-6 py-4 flex justify-between items-center shadow-sm z-10">
+                        <div className="flex items-center gap-3">
+                            <div className="bg-indigo-600 p-2 rounded-lg shrink-0 flex items-center justify-center">
+                                <Icon name="message-square" className="text-white" />
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                                {isEditingTitle ? (
+                                    <input
+                                        ref={titleInputRef}
+                                        type="text"
+                                        value={boardTitle}
+                                        onChange={(e) => setBoardTitle(e.target.value)}
+                                        onBlur={() => setIsEditingTitle(false)}
+                                        onKeyDown={(e) => e.key === 'Enter' && setIsEditingTitle(false)}
+                                        className="font-bold text-lg leading-tight border-b-2 border-indigo-500 outline-none bg-transparent w-full"
+                                    />
+                                ) : (
+                                    <div 
+                                        className="flex items-center gap-2 group cursor-pointer"
+                                        onClick={() => setIsEditingTitle(true)}
+                                    >
+                                        <h1 className="font-bold text-lg leading-tight truncate">
+                                            {boardTitle || 'Namnlös Tavla'}
+                                        </h1>
+                                        <Icon name="edit-2" size={14} className="text-slate-300 group-hover:text-indigo-500 transition-colors" />
+                                    </div>
+                                )}
+                                <p className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Ingen lagring • Endast session</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {userCount > 0 && (
+                                <span className="text-xs text-slate-500 font-medium px-3 py-1 bg-slate-100 rounded-full">
+                                    {userCount} aktiv{userCount !== 1 ? 'a' : ''}
+                                </span>
+                            )}
+                            {messages.length > 0 && (
+                                <button onClick={clearBoard} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all">
+                                    <Icon name="trash-2" size={18} />
+                                </button>
+                            )}
+                            <button onClick={() => setShowShareModal(true)} className="flex items-center gap-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-4 py-2 rounded-full text-sm font-semibold">
+                                <Icon name="share-2" size={16} /> Dela
+                            </button>
+                        </div>
+                    </header>
+
+                    <div className="bg-indigo-600 text-white px-6 py-2 flex items-center justify-center gap-2 text-xs">
+                        <Icon name="info" size={14} />
+                        <span>Delad tavla. Innehållet raderas när alla användare lämnar.</span>
+                    </div>
+
+                    {/* Board */}
+                    <main className="flex-1 overflow-y-auto p-6">
+                        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {messages.length === 0 && (
+                                <div className="col-span-full flex flex-col items-center justify-center py-20 text-slate-400 border-2 border-dashed border-slate-200 rounded-3xl">
+                                    <Icon name="message-square" size={48} className="mb-4 opacity-20" />
+                                    <p className="font-medium text-lg text-slate-500">Tavlan är redo</p>
+                                    <p className="text-sm text-center">Skriv något nedan för att börja.</p>
+                                </div>
+                            )}
+                            
+                            {messages.map((msg) => (
+                                <div key={msg.id} className="p-4 rounded-2xl shadow-sm border border-slate-200 bg-white animate-in relative group">
+                                    <button onClick={() => deleteMessage(msg.id)} className="absolute top-3 right-3 p-1 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-md opacity-0 group-hover:opacity-100 transition-all">
+                                        <Icon name="x" size={16} />
+                                    </button>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center">
+                                            <Icon name="user" size={12} className="text-indigo-600" />
+                                        </div>
+                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Session Post</span>
+                                    </div>
+                                    {msg.text && <p className="text-slate-800 mb-3 whitespace-pre-wrap leading-relaxed text-sm pr-4">{msg.text}</p>}
+                                    {msg.file && (
+                                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                                            <p className="text-[10px] text-amber-700 mb-2 font-semibold">⚠️ Lokal fil (delas inte med andra)</p>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3 overflow-hidden">
+                                                    <div className="bg-amber-500 p-2 rounded-lg text-white shrink-0">
+                                                        <Icon name="file-text" size={16} />
+                                                    </div>
+                                                    <div className="flex flex-col overflow-hidden">
+                                                        <span className="text-xs font-bold truncate text-slate-700">{msg.file.name}</span>
+                                                        <span className="text-[10px] text-slate-400">{msg.file.size}</span>
+                                                    </div>
+                                                </div>
+                                                <a href={msg.file.url} download={msg.file.name} className="p-2 hover:bg-amber-100 text-amber-600 rounded-lg">
+                                                    <Icon name="download" size={18} />
+                                                </a>
+                                            </div>
+                                        </div>
+                                    )}
+                                    <div className="mt-3 text-[10px] text-slate-300 text-right font-medium">{msg.timestamp}</div>
+                                </div>
+                            ))}
+                            <div ref={messagesEndRef} />
+                        </div>
+                    </main>
+
+                    {/* Footer */}
+                    <footer className="bg-white border-t p-4">
+                        <form onSubmit={handleSendMessage} className="max-w-4xl mx-auto">
+                            <div className="flex flex-col gap-3">
+                                {file && (
+                                    <div className="flex items-center justify-between bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100">
+                                        <div className="flex items-center gap-2 overflow-hidden">
+                                            <Icon name="paperclip" size={16} className="text-indigo-500" />
+                                            <span className="text-xs font-bold text-indigo-700 truncate">{file.name}</span>
+                                        </div>
+                                        <button type="button" onClick={() => setFile(null)} className="text-indigo-400 hover:text-indigo-600 p-1"><Icon name="x" size={16}/></button>
+                                    </div>
+                                )}
+                                <div className="flex items-end gap-2">
+                                    <div className="flex-1 relative">
+                                        <textarea
+                                            value={newMessage}
+                                            onChange={(e) => setNewMessage(e.target.value)}
+                                            placeholder="Skriv något flyktigt..."
+                                            className="w-full border border-slate-200 rounded-2xl px-4 py-4 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none max-h-32 min-h-[56px] text-sm shadow-inner"
+                                            rows="1"
+                                            onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
+                                        />
+                                        <label className="absolute right-3 bottom-3 cursor-pointer p-2 hover:bg-slate-100 rounded-xl">
+                                            <input type="file" className="hidden" onChange={(e) => setFile(e.target.files[0])} />
+                                            <Icon name="paperclip" size={20} className="text-slate-400" />
+                                        </label>
+                                    </div>
+                                    <button type="submit" disabled={!newMessage.trim() && !file} className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 text-white p-4 rounded-2xl shadow-md transition-all active:scale-95">
+                                        <Icon name="send" size={22} />
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </footer>
+
+                    {/* Modal */}
+                    {showShareModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+                            <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-sm overflow-hidden p-8 flex flex-col items-center">
+                                <div className="w-full flex justify-end">
+                                    <button onClick={() => setShowShareModal(false)} className="p-2 text-slate-400"><Icon name="x" size={20}/></button>
+                                </div>
+                                <div className="bg-indigo-600 p-8 rounded-3xl shadow-xl shadow-indigo-100 mb-6 flex items-center justify-center">
+                                    <Icon name="share-2" size={64} className="text-white" />
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-800 mb-2">Dela Tavlan</h3>
+                                <p className="text-center text-sm text-slate-500 mb-3 leading-relaxed">Skicka denna länk för att dela tavlan med andra.</p>
+                                <p className="text-center text-xs text-slate-400 mb-8 leading-relaxed px-2 py-2 bg-slate-50 rounded-lg">📎 Obs: Filöverföringar delas inte — bara textmeddelanden synkas mellan användare.</p>
+                                <button onClick={copyToClipboard} className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold transition-all shadow-lg ${copied ? 'bg-green-500 text-white' : 'bg-indigo-600 text-white'}`}>
+                                    {copied ? <><Icon name="check" size={18}/> Kopierat!</> : <><Icon name="copy" size={18}/> Kopiera Länk</>}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
