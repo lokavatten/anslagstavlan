@@ -355,7 +355,15 @@
                                 </div>
                                 <h3 className="text-lg font-bold text-slate-800 mb-2">Dela Tavlan</h3>
                                 <p className="text-center text-sm text-slate-500 mb-3 leading-relaxed">Skicka denna länk för att dela tavlan med andra.</p>
-                                <p className="text-center text-xs text-slate-400 mb-8 leading-relaxed px-2 py-2 bg-slate-50 rounded-lg">📎 Obs: Filöverföringar delas inte — bara textmeddelanden synkas mellan användare.</p>
+                                <p className="text-center text-xs text-slate-400 mb-6 leading-relaxed px-2 py-2 bg-slate-50 rounded-lg">📎 Obs: Filöverföringar delas inte — bara textmeddelanden synkas mellan användare.</p>
+                                <div className="flex flex-col items-center gap-4 mb-6">
+                                    <img
+                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}`}
+                                        alt="QR Code"
+                                        className="border-4 border-slate-200 rounded-xl"
+                                    />
+                                    <p className="text-[10px] text-slate-400">Skanna QR-koden för att dela direkt</p>
+                                </div>
                                 <button onClick={copyToClipboard} className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold transition-all shadow-lg ${copied ? 'bg-green-500 text-white' : 'bg-indigo-600 text-white'}`}>
                                     {copied ? <><Icon name="check" size={18}/> Kopierat!</> : <><Icon name="copy" size={18}/> Kopiera Länk</>}
                                 </button>
