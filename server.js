@@ -113,6 +113,19 @@ io.on('connection', (socket) => {
     io.to(currentRoom).emit('clear-board');
   });
 
+  socket.on('edit-message', ({ id, text }) => {
+    if (!currentRoom) return;
+
+    const room = rooms.get(currentRoom);
+    if (!room) return;
+
+    const msg = room.messages.find(m => m.id === id);
+    if (msg) {
+      msg.text = text;
+      io.to(currentRoom).emit('edit-message', { id, text });
+    }
+  });
+
   socket.on('disconnect', () => {
     if (!currentRoom) return;
 
