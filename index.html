@@ -159,10 +159,13 @@
             };
 
             const saveEdit = (id) => {
+                // Update optimistically
+                setMessages(prev => prev.map(m => m.id === id ? { ...m, text: editText } : m));
+                setEditingId(null);
+                // Then send to server
                 if (socketRef.current) {
                     socketRef.current.emit('edit-message', { id, text: editText });
                 }
-                setEditingId(null);
             };
 
             const copyToClipboard = () => {
