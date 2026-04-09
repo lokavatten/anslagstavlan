@@ -9,7 +9,8 @@ const io = socketIO(server, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"]
-  }
+  },
+  maxHttpBufferSize: 11 * 1024 * 1024 // 11 MB to allow 10 MB files
 });
 
 // In-memory room storage
@@ -83,7 +84,8 @@ io.on('connection', (socket) => {
       file: data.file ? {
         name: data.file.name,
         type: data.file.type,
-        size: data.file.size
+        size: data.file.size,
+        data: data.file.data // base64 data for download
       } : null
     };
 

@@ -121,29 +121,44 @@
                 if (e) e.preventDefault();
                 if (!newMessage.trim() && !file) return;
 
-                let fileData = null;
-                if (file) {
-                    fileData = {
-                        name: file.name,
-                        type: file.type,
-                        size: (file.size / 1024).toFixed(1) + " KB"
-                    };
+                // Validate file size (10 MB max)
+                if (file && file.size > 10 * 1024 * 1024) {
+                    alert('Filen är för stor. Max 10 MB.');
+                    return;
                 }
 
                 const newMsg = {
                     id: Date.now(),
                     text: newMessage,
-                    file: fileData,
+                    file: null,
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 };
 
-                // Send via Socket.io
-                if (socketRef.current) {
-                    socketRef.current.emit('new-message', newMsg);
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        newMsg.file = {
+                            name: file.name,
+                            type: file.type,
+                            size: (file.size / 1024).toFixed(1) + " KB",
+                            data: event.target.result // base64
+                        };
+                        // Send via Socket.io
+                        if (socketRef.current) {
+                            socketRef.current.emit('new-message', newMsg);
+                        }
+                        setNewMessage('');
+                        setFile(null);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    // Send message without file
+                    if (socketRef.current) {
+                        socketRef.current.emit('new-message', newMsg);
+                    }
+                    setNewMessage('');
+                    setFile(null);
                 }
-
-                setNewMessage('');
-                setFile(null);
             };
 
             const deleteMessage = (id) => {
@@ -282,11 +297,11 @@
                                         )
                                     )}
                                     {msg.file && (
-                                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
-                                            <p className="text-[10px] text-amber-700 mb-2 font-semibold">⚠️ Lokal fil (delas inte med andra)</p>
+                                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+                                            <p className="text-[10px] text-blue-700 mb-2 font-semibold">📎 Bifogad fil</p>
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-3 overflow-hidden">
-                                                    <div className="bg-amber-500 p-2 rounded-lg text-white shrink-0">
+                                                    <div className="bg-blue-500 p-2 rounded-lg text-white shrink-0">
                                                         <Icon name="file-text" size={16} />
                                                     </div>
                                                     <div className="flex flex-col overflow-hidden">
@@ -294,9 +309,11 @@
                                                         <span className="text-[10px] text-slate-400">{msg.file.size}</span>
                                                     </div>
                                                 </div>
-                                                <a href={msg.file.url} download={msg.file.name} className="p-2 hover:bg-amber-100 text-amber-600 rounded-lg">
-                                                    <Icon name="download" size={18} />
-                                                </a>
+                                                {msg.file.data && (
+                                                    <a href={msg.file.data} download={msg.file.name} className="p-2 hover:bg-blue-100 text-blue-600 rounded-lg">
+                                                        <Icon name="download" size={18} />
+                                                    </a>
+                                                )}
                                             </div>
                                         </div>
                                     )}
