@@ -77,6 +77,11 @@ io.on('connection', (socket) => {
     const room = rooms.get(currentRoom);
     if (!room) return;
 
+    console.log('Server received message:', data.text ? data.text.slice(0, 50) : '(no text)');
+    if (data.file) {
+      console.log('Server received file:', data.file.name, 'Size:', data.file.size);
+    }
+
     const message = {
       id: data.id,
       text: data.text,
@@ -91,6 +96,7 @@ io.on('connection', (socket) => {
 
     room.messages.push(message);
 
+    console.log('Broadcasting message to room:', currentRoom);
     // Broadcast to all users in room
     io.to(currentRoom).emit('new-message', message);
   });

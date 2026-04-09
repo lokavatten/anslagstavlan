@@ -73,6 +73,10 @@
                 });
 
                 socket.on('new-message', (message) => {
+                    console.log('Received message:', message);
+                    if (message.file) {
+                        console.log('Message has file:', message.file.name);
+                    }
                     setMessages(prev => [...prev, message]);
                     setTimeout(() => {
                         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -143,12 +147,16 @@
                             size: (file.size / 1024).toFixed(1) + " KB",
                             data: event.target.result // base64
                         };
+                        console.log('Sending file:', newMsg.file.name, 'Size:', newMsg.file.size);
                         // Send via Socket.io
                         if (socketRef.current) {
                             socketRef.current.emit('new-message', newMsg);
                         }
                         setNewMessage('');
                         setFile(null);
+                    };
+                    reader.onerror = (error) => {
+                        console.error('File read error:', error);
                     };
                     reader.readAsDataURL(file);
                 } else {
