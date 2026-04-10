@@ -379,7 +379,10 @@
                 });
             };
 
-            if (currentPage === 'stats') {
+            // Determine which page to show - check both state and pathname
+            const isStatsPage = currentPage === 'stats' || window.location.pathname === '/stats';
+
+            if (isStatsPage) {
                 return <StatsPage />;
             }
 
