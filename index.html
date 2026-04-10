@@ -47,9 +47,11 @@
             const [roomId, setRoomId] = useState(null);
             const [editingId, setEditingId] = useState(null);
             const [editText, setEditText] = useState('');
+            const [showVersion, setShowVersion] = useState(false);
             const socketRef = useRef(null);
             const messagesEndRef = useRef(null);
             const titleInputRef = useRef(null);
+            const version = '1.1.0';
 
             // Initialize Socket.io connection and room
             useEffect(() => {
@@ -386,6 +388,16 @@
                                     </div>
                                     <button type="submit" disabled={!newMessage.trim() && !file} className={`text-white p-2.5 sm:p-4 rounded-xl sm:rounded-2xl shadow-md transition-all active:scale-95 shrink-0 ${(file || newMessage.trim()) ? 'bg-indigo-700 animate-pulse-button' : 'bg-indigo-600 hover:bg-indigo-700'} ${!newMessage.trim() && !file ? 'disabled:bg-slate-200' : ''}`}>
                                         <Icon name="send" size={18} className="sm:w-6 sm:h-6" />
+                                    </button>
+                                </div>
+                                <div className="flex items-center justify-between text-[10px] text-slate-400 px-1">
+                                    <span>Flyktig tavla</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowVersion(!showVersion)}
+                                        className="hover:text-slate-500 transition-colors cursor-pointer"
+                                    >
+                                        v{version}
                                     </button>
                                 </div>
                             </div>
