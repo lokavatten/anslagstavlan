@@ -70,10 +70,16 @@
                                     <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold">Realtids dashboard</p>
                                 </div>
                             </div>
-                            <a href="/" className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 px-4 py-2 rounded-lg transition-all font-semibold text-sm">
+                            <button
+                                onClick={() => {
+                                    window.history.pushState({}, '', '/');
+                                    setCurrentPage('board');
+                                }}
+                                className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 px-4 py-2 rounded-lg transition-all font-semibold text-sm"
+                            >
                                 <Icon name="arrow-left" size={16} />
                                 Tillbaka
-                            </a>
+                            </button>
                         </div>
                     </header>
 
@@ -100,10 +106,13 @@
                                 ) : (
                                     <div className="grid gap-4">
                                         {stats.rooms.map((room) => (
-                                            <a
+                                            <button
                                                 key={room.id}
-                                                href={`/#${room.id}`}
-                                                className="bg-white border border-slate-200 rounded-xl p-4 hover:border-indigo-500 hover:shadow-md transition-all"
+                                                onClick={() => {
+                                                    window.history.pushState({}, '', `/#${room.id}`);
+                                                    setCurrentPage('board');
+                                                }}
+                                                className="w-full text-left bg-white border border-slate-200 rounded-xl p-4 hover:border-indigo-500 hover:shadow-md transition-all"
                                             >
                                                 <div className="flex items-start justify-between mb-3">
                                                     <div className="flex-1 min-w-0">
@@ -119,7 +128,7 @@
                                                     <Icon name="link-2" size={14} />
                                                     Gå till tavla
                                                 </div>
-                                            </a>
+                                            </button>
                                         ))}
                                     </div>
                                 )}
@@ -178,15 +187,28 @@
                 else setImageSize('full');
             };
 
-            // Initialize Socket.io connection and room
+            // Monitor URL changes and determine page
             useEffect(() => {
-                // Determine current page based on pathname
-                if (window.location.pathname === '/stats') {
-                    setCurrentPage('stats');
-                    return;
-                } else {
-                    setCurrentPage('board');
-                }
+                const handleUrlChange = () => {
+                    console.log('URL changed:', window.location.pathname);
+                    if (window.location.pathname === '/stats') {
+                        setCurrentPage('stats');
+                    } else {
+                        setCurrentPage('board');
+                    }
+                };
+
+                // Initial check
+                handleUrlChange();
+
+                // Listen for popstate (back/forward button)
+                window.addEventListener('popstate', handleUrlChange);
+                return () => window.removeEventListener('popstate', handleUrlChange);
+            }, []);
+
+            // Initialize Socket.io connection and room for board page
+            useEffect(() => {
+                if (currentPage === 'stats') return;
 
                 // Get or create room ID from URL hash
                 let currentRoomId = window.location.hash.slice(1);
@@ -261,20 +283,8 @@
                     }
                 };
 
-                const handlePopState = () => {
-                    if (window.location.pathname === '/stats') {
-                        setCurrentPage('stats');
-                    } else {
-                        setCurrentPage('board');
-                    }
-                };
-
                 window.addEventListener('keydown', handleEscapeKey);
-                window.addEventListener('popstate', handlePopState);
-                return () => {
-                    window.removeEventListener('keydown', handleEscapeKey);
-                    window.removeEventListener('popstate', handlePopState);
-                };
+                return () => window.removeEventListener('keydown', handleEscapeKey);
             }, []);
 
             useEffect(() => {
@@ -643,9 +653,16 @@
                                     </button>
                                 </div>
                                 <div className="flex items-center justify-between text-[10px] text-slate-400 px-1">
-                                    <a href="/stats" className="hover:text-indigo-500 transition-colors">
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            window.history.pushState({}, '', '/stats');
+                                            setCurrentPage('stats');
+                                        }}
+                                        className="hover:text-indigo-500 transition-colors cursor-pointer"
+                                    >
                                         Statistik
-                                    </a>
+                                    </button>
                                     <button
                                         type="button"
                                         onClick={() => setShowVersion(!showVersion)}
