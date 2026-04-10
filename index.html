@@ -54,11 +54,11 @@
             const titleInputRef = useRef(null);
             const version = '1.1.0';
 
-            const getImageSizeClass = () => {
+            const getImageSizeStyle = () => {
                 switch(imageSize) {
-                    case 'half': return 'w-1/2';
-                    case 'small': return 'w-1/4';
-                    default: return 'w-full';
+                    case 'half': return { width: '50%', height: 'auto' };
+                    case 'small': return { width: '25%', height: 'auto' };
+                    default: return { width: '100%', height: 'auto' };
                 }
             };
 
@@ -342,7 +342,7 @@
                                         <div className="bg-blue-50 border border-blue-200 rounded-lg sm:rounded-xl p-2 sm:p-3">
                                             {msg.file.isImage ? (
                                                 <div className="flex flex-col gap-2">
-                                                    <img src={msg.file.data} alt={msg.file.name} className={`w-full object-cover rounded-md ${getImageSizeClass()}`} />
+                                                    <img src={msg.file.data} alt={msg.file.name} style={{...getImageSizeStyle(), objectFit: 'cover'}} className="rounded-md" />
                                                     <div className="flex items-center justify-between gap-2">
                                                         <div className="flex flex-col overflow-hidden min-w-0">
                                                             <span className="text-xs font-bold truncate text-slate-700">{msg.file.name}</span>
