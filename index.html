@@ -139,6 +139,18 @@
             }, [boardTitle]);
 
             useEffect(() => {
+                const handleEscapeKey = (e) => {
+                    if (e.key === 'Escape') {
+                        setExpandedMessageId(null);
+                        setShowShareModal(false);
+                    }
+                };
+
+                window.addEventListener('keydown', handleEscapeKey);
+                return () => window.removeEventListener('keydown', handleEscapeKey);
+            }, []);
+
+            useEffect(() => {
                 if (isEditingTitle && titleInputRef.current) {
                     titleInputRef.current.focus();
                     titleInputRef.current.select();
