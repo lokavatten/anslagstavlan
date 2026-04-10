@@ -90,7 +90,8 @@ io.on('connection', (socket) => {
         name: data.file.name,
         type: data.file.type,
         size: data.file.size,
-        data: data.file.data // base64 data for download
+        data: data.file.data, // base64 data for download
+        isImage: data.file.isImage // preserve image flag
       } : null
     };
 
