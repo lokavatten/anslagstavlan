@@ -60,14 +60,20 @@
             return (
                 <div className="flex flex-col h-screen bg-slate-50">
                     <header className="bg-white border-b px-6 py-4 shadow-sm">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-indigo-600 p-2 rounded-lg flex items-center justify-center">
-                                <Icon name="bar-chart-3" className="text-white w-5 h-5" />
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-indigo-600 p-2 rounded-lg flex items-center justify-center">
+                                    <Icon name="bar-chart-3" className="text-white w-5 h-5" />
+                                </div>
+                                <div>
+                                    <h1 className="font-bold text-lg">Statistik</h1>
+                                    <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold">Realtids dashboard</p>
+                                </div>
                             </div>
-                            <div>
-                                <h1 className="font-bold text-lg">Statistik</h1>
-                                <p className="text-xs text-slate-400 uppercase tracking-widest font-semibold">Realtids dashboard</p>
-                            </div>
+                            <a href="/" className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 px-4 py-2 rounded-lg transition-all font-semibold text-sm">
+                                <Icon name="arrow-left" size={16} />
+                                Tillbaka
+                            </a>
                         </div>
                     </header>
 
