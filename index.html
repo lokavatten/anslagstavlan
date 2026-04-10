@@ -24,9 +24,17 @@
     <div id="root"></div>
 
     <script type="text/babel">
+        // === REACT APP (SPA) ===
+        // Single Page Application with client-side routing and WebSocket real-time sync.
+        // Components: Icon (icon wrapper), StatsPage (room list), App (main board UI).
+
         const { useState, useRef, useEffect } = React;
 
-        // Enkel komponent för Lucide-ikoner eftersom vi kör via CDN
+        /**
+         * Icon Component
+         * Thin wrapper around Lucide CDN icons.
+         * Lucide requires createIcons() to be called after render to convert <i> to <svg>.
+         */
         const Icon = ({ name, size = 20, className = "" }) => {
             useEffect(() => {
                 if (window.lucide) {
@@ -36,15 +44,25 @@
             return <i data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
         };
 
+        /**
+         * StatsPage Component
+         * Displays a list of all active rooms, with user counts and live stats.
+         * PIN-modal for PIN entry when clicking on a room.
+         * Polls /api/stats every 2 seconds to keep numbers fresh.
+         */
         function StatsPage() {
             const [stats, setStats] = useState({ totalRooms: 0, totalUsers: 0, rooms: [] });
             const [loading, setLoading] = useState(true);
-            const [pinModal, setPinModal] = useState(null); // { roomId }
+            const [pinModal, setPinModal] = useState(null); // { roomId } when PIN-modal is open
             const [pinInput, setPinInput] = useState('');
             const [pinError, setPinError] = useState('');
             const [pinLoading, setPinLoading] = useState(false);
             const statsRefreshRef = useRef(null);
 
+            /**
+             * handleVerifyPin
+             * POST to /api/verify-pin with roomId and PIN. On success, navigate to board.
+             */
             const handleVerifyPin = async () => {
                 setPinLoading(true);
                 setPinError('');
@@ -222,34 +240,59 @@
             );
         }
 
+        /**
+         * App Component
+         * Main UI for the collaborative board. Handles routing (board vs /stats),
+         * Socket.io connection, and all user interactions (messages, edits, deletes, etc.).
+         */
         function App() {
+            // === BOARD STATE ===
             const [messages, setMessages] = useState([]);
             const [newMessage, setNewMessage] = useState('');
             const [boardTitle, setBoardTitle] = useState('Flyktig tavla');
             const [isEditingTitle, setIsEditingTitle] = useState(false);
-            const [file, setFile] = useState(null);
+
+            // === FILE UPLOAD STATE ===
+            const [file, setFile] = useState(null); // Pending file to send
+            const [uploadError, setUploadError] = useState(''); // Error message from upload
+
+            // === UI/MODAL STATE ===
             const [showShareModal, setShowShareModal] = useState(false);
             const [copied, setCopied] = useState(false);
-            const [userCount, setUserCount] = useState(0);
-            const [roomId, setRoomId] = useState(null);
+            const [showVersion, setShowVersion] = useState(false);
+
+            // === MESSAGE EDITING STATE ===
             const [editingId, setEditingId] = useState(null);
             const [editText, setEditText] = useState('');
-            const [showVersion, setShowVersion] = useState(false);
-            const [imageSize, setImageSize] = useState('full'); // 'full', 'half', 'small'
-            const [displayMode, setDisplayMode] = useState('normal'); // 'normal', 'dynamic'
             const [expandedMessageId, setExpandedMessageId] = useState(null);
-            const [currentPage, setCurrentPage] = useState(() => {
-                return window.location.pathname === '/stats' ? 'stats' : 'board';
-            });
-            const [boardPin, setBoardPin] = useState('');
-            const [pinModal, setPinModal] = useState(null); // { roomId }
+
+            // === IMAGE & DISPLAY STATE ===
+            const [imageSize, setImageSize] = useState('full'); // 'full', 'half', 'small'
+            const [displayMode, setDisplayMode] = useState('normal'); // 'normal' (clamped), 'dynamic' (scrollable)
+
+            // === ROOM & USER STATE ===
+            const [roomId, setRoomId] = useState(null);
+            const [userCount, setUserCount] = useState(0);
+            const [boardPin, setBoardPin] = useState(''); // From room-state
+
+            // === PIN MODAL STATE ===
+            const [pinModal, setPinModal] = useState(null); // { roomId } when modal open
             const [pinInput, setPinInput] = useState('');
             const [pinError, setPinError] = useState('');
             const [pinLoading, setPinLoading] = useState(false);
-            const [uploadError, setUploadError] = useState('');
-            const socketRef = useRef(null);
-            const messagesEndRef = useRef(null);
-            const titleInputRef = useRef(null);
+
+            // === ROUTING STATE ===
+            // 'board' or 'stats'. Derived from window.location.pathname.
+            // Checked directly in render() to avoid race conditions.
+            const [currentPage, setCurrentPage] = useState(() => {
+                return window.location.pathname === '/stats' ? 'stats' : 'board';
+            });
+
+            // === REFS ===
+            const socketRef = useRef(null); // Socket.io client instance
+            const messagesEndRef = useRef(null); // Sentinel for scrollIntoView
+            const titleInputRef = useRef(null); // For auto-focus on title edit
+
             const version = '1.1.0';
 
             const getImageSizeStyle = () => {
@@ -328,14 +371,18 @@
                     socket.emit('join-room', currentRoomId);
                 });
 
+                // === SOCKET.IO EVENT HANDLERS ===
+                // Server broadcast events that update local state when received.
+
                 socket.on('room-state', (state) => {
+                    // Full state on initial join. Includes all messages, title, user count, and PIN.
                     setMessages(state.messages || []);
                     setUserCount(state.userCount || 0);
                     if (state.title) {
                         setBoardTitle(state.title);
                     }
                     if (state.pin) {
-                        setBoardPin(state.pin);
+                        setBoardPin(state.pin); // Shown in share modal
                     }
                 });
 
@@ -372,10 +419,11 @@
                 });
 
                 socket.on('upload-error', (errorMessage) => {
+                    // Server rejected file (exceeds 15 MB buffer limit).
+                    // This is the fallback for files that somehow bypassed client-side checks.
                     console.error('Upload error from server:', errorMessage);
                     setUploadError(errorMessage);
-                    // Re-enable file picker
-                    setFile(null);
+                    setFile(null); // Clear pending file so user can pick another
                 });
 
                 socket.on('error', (error) => {
@@ -445,13 +493,25 @@
                 }
             };
 
+            /**
+             * handleSendMessage
+             * End-to-end file upload with two-layer validation:
+             * 1. Client pre-encoding: 10 MB limit (user-friendly, immediate feedback)
+             * 2. Client post-encoding: 15 MB limit (matches Socket.io buffer)
+             * Server also validates post-encoding as a third defense layer.
+             *
+             * Base64 encoding adds ~33% size. Example:
+             *   10 MB file → 13.3 MB base64 < 15 MB ✓
+             *   12 MB file → 15.96 MB base64 > 15 MB ✗
+             */
             const handleSendMessage = (e) => {
                 if (e) e.preventDefault();
                 if (!newMessage.trim() && !file) return;
 
                 setUploadError('');
 
-                // Validate file size (10 MB max before encoding)
+                // === LAYER 1: PRE-ENCODING VALIDATION ===
+                // 10 MB limit for quick feedback before FileReader (which is slow for large files).
                 if (file && file.size > 10 * 1024 * 1024) {
                     setUploadError('Filen är för stor. Max 10 MB.');
                     return;
@@ -471,8 +531,10 @@
                             const isImage = file.type.startsWith('image/');
                             const base64Data = event.target.result; // base64 string with "data:..." prefix
 
-                            // Measure base64 size accurately
-                            // Using Blob to get actual byte size when encoded as UTF-8
+                            // === LAYER 2: POST-ENCODING VALIDATION ===
+                            // Measure base64 size using Blob, not .length (which counts JS characters, not UTF-8 bytes).
+                            // Example: base64Data.length = 13,300,000 chars, but Blob.size = 13,300,000 bytes (UTF-8).
+                            // This matches how Socket.io counts buffer size.
                             const base64Blob = new Blob([base64Data]);
                             const base64SizeBytes = base64Blob.size;
                             const base64SizeInMB = base64SizeBytes / (1024 * 1024);
@@ -539,11 +601,17 @@
                 }
             };
 
+            /**
+             * saveEdit
+             * Optimistic update: update local state immediately, then send to server.
+             * If network is slow, user sees the change right away. Server broadcast
+             * confirms the change to all users (including this one).
+             */
             const saveEdit = (id) => {
-                // Update optimistically
+                // Update local state immediately (optimistic)
                 setMessages(prev => prev.map(m => m.id === id ? { ...m, text: editText } : m));
                 setEditingId(null);
-                // Then send to server
+                // Send to server asynchronously
                 if (socketRef.current) {
                     socketRef.current.emit('edit-message', { id, text: editText });
                 }
@@ -557,7 +625,10 @@
                 });
             };
 
-            // Determine which page to show - check pathname directly for reliability
+            // === CLIENT-SIDE ROUTING ===
+            // Check pathname directly (not just currentPage state) to avoid race conditions.
+            // Example: user navigates to /stats, but render() might fire before popstate event updates state.
+            // By checking pathname directly, we always render the correct page.
             const pathName = window.location.pathname;
             console.log('Rendering - currentPage:', currentPage, 'pathname:', pathName);
 
