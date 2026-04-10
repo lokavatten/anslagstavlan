@@ -17,6 +17,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .animate-pulse-button { animation: buttonPulse 2s infinite; }
         @keyframes buttonPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); } 50% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); } }
+        .line-clamp-4 { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -49,6 +50,8 @@
             const [editText, setEditText] = useState('');
             const [showVersion, setShowVersion] = useState(false);
             const [imageSize, setImageSize] = useState('full'); // 'full', 'half', 'small'
+            const [displayMode, setDisplayMode] = useState('normal'); // 'normal', 'dynamic'
+            const [expandedMessageId, setExpandedMessageId] = useState(null);
             const socketRef = useRef(null);
             const messagesEndRef = useRef(null);
             const titleInputRef = useRef(null);
@@ -269,6 +272,9 @@
                             )}
                             {messages.length > 0 && (
                                 <>
+                                    <button onClick={() => setDisplayMode(displayMode === 'normal' ? 'dynamic' : 'normal')} title={displayMode === 'normal' ? 'Växla till dynamiskt läge' : 'Växla till normalt läge'} className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all text-xs font-semibold" style={{minWidth: '32px'}}>
+                                        {displayMode === 'normal' ? 'N' : 'D'}
+                                    </button>
                                     <button onClick={toggleImageSize} title="Ändra bildstorlek" className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 rounded-full transition-all" style={{fontSize: '11px', fontWeight: '600', minWidth: '32px'}}>
                                         {getImageSizeLabel()}
                                     </button>
@@ -329,13 +335,32 @@
                                                 className="w-full text-slate-800 text-sm leading-relaxed bg-slate-50 border border-indigo-300 rounded-md sm:rounded-lg px-2 py-1 resize-none outline-none focus:ring-2 focus:ring-indigo-400 mb-3"
                                                 rows={3}
                                             />
+                                        ) : displayMode === 'normal' ? (
+                                            <div className="mb-3 relative">
+                                                <p
+                                                    className="text-slate-800 whitespace-pre-wrap leading-relaxed text-sm pr-8 cursor-text hover:bg-slate-50 rounded px-1 -mx-1 line-clamp-4"
+                                                    onClick={() => { setEditingId(msg.id); setEditText(msg.text); }}
+                                                >
+                                                    {msg.text}
+                                                </p>
+                                                {msg.text.split('\n').length > 4 || msg.text.length > 200 ? (
+                                                    <button
+                                                        onClick={() => setExpandedMessageId(msg.id)}
+                                                        className="absolute bottom-0 right-0 text-indigo-600 hover:text-indigo-700 font-semibold text-sm bg-white px-1"
+                                                    >
+                                                        ...
+                                                    </button>
+                                                ) : null}
+                                            </div>
                                         ) : (
-                                            <p
-                                                className="text-slate-800 mb-3 whitespace-pre-wrap leading-relaxed text-sm pr-3 sm:pr-4 cursor-text hover:bg-slate-50 rounded px-1 -mx-1"
-                                                onClick={() => { setEditingId(msg.id); setEditText(msg.text); }}
-                                            >
-                                                {msg.text}
-                                            </p>
+                                            <div className="mb-3 bg-slate-50 rounded p-2 max-h-96 overflow-y-auto">
+                                                <p
+                                                    className="text-slate-800 whitespace-pre-wrap leading-relaxed text-sm cursor-text"
+                                                    onClick={() => { setEditingId(msg.id); setEditText(msg.text); }}
+                                                >
+                                                    {msg.text}
+                                                </p>
+                                            </div>
                                         )
                                     )}
                                     {msg.file && (
@@ -476,7 +501,22 @@
                         </form>
                     </footer>
 
-                    {/* Modal */}
+                    {/* Expand Message Modal */}
+                    {expandedMessageId && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-md">
+                            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col relative">
+                                <button onClick={() => setExpandedMessageId(null)} className="absolute top-3 right-3 p-2 text-slate-400 hover:text-slate-600 z-10"><Icon name="x" size={20}/></button>
+                                <div className="p-4 sm:p-6 max-h-96 overflow-y-auto">
+                                    <h3 className="text-sm font-semibold text-slate-400 mb-3 uppercase">Fullständigt innehål</h3>
+                                    <p className="text-slate-800 whitespace-pre-wrap leading-relaxed">
+                                        {messages.find(m => m.id === expandedMessageId)?.text}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Share Modal */}
                     {showShareModal && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-md">
                             <div className="bg-white rounded-2xl sm:rounded-[32px] shadow-2xl w-full max-w-sm overflow-hidden p-4 sm:p-8 flex flex-col items-center relative">
