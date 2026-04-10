@@ -10,7 +10,7 @@ const io = socketIO(server, {
     origin: "*",
     methods: ["GET", "POST"]
   },
-  maxHttpBufferSize: 11 * 1024 * 1024 // 11 MB to allow 10 MB files
+  maxHttpBufferSize: 15 * 1024 * 1024 // 15 MB to allow 10 MB files (accounting for base64 overhead ~33%)
 });
 
 // In-memory room storage
