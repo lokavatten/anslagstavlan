@@ -1,6 +1,6 @@
 {
   "name": "flyktig-tavla",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Delad anslagstavla i realtid",
   "main": "server.js",
   "scripts": {
