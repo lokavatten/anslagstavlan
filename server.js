@@ -19,6 +19,22 @@ const rooms = new Map();
 // Serve static files
 app.use(express.static(path.join(__dirname)));
 
+// API endpoint for stats
+app.get('/api/stats', (req, res) => {
+  const stats = {
+    totalRooms: rooms.size,
+    totalUsers: Array.from(rooms.values()).reduce((sum, room) => sum + room.userCount, 0),
+    rooms: Array.from(rooms.entries()).map(([roomId, room]) => ({
+      id: roomId,
+      title: room.title,
+      userCount: room.userCount,
+      messageCount: room.messages.length,
+      url: `${req.protocol}://${req.get('host')}/#${roomId}`
+    }))
+  };
+  res.json(stats);
+});
+
 // Serve index.html on all routes (for SPA)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
