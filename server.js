@@ -48,7 +48,8 @@ io.on('connection', (socket) => {
       rooms.set(roomId, {
         messages: [],
         userCount: 0,
-        cleanupTimer: null
+        cleanupTimer: null,
+        title: 'Flyktig tavla'
       });
     }
 
@@ -64,7 +65,8 @@ io.on('connection', (socket) => {
     // Send current room state to the joining user
     socket.emit('room-state', {
       messages: room.messages,
-      userCount: room.userCount
+      userCount: room.userCount,
+      title: room.title
     });
 
     // Notify others in room that user count changed
@@ -133,6 +135,21 @@ io.on('connection', (socket) => {
       msg.text = text;
       io.to(currentRoom).emit('edit-message', { id, text });
     }
+  });
+
+  socket.on('board-title-change', (newTitle) => {
+    if (!currentRoom) return;
+
+    const room = rooms.get(currentRoom);
+    if (!room) return;
+
+    console.log('Board title changed in room', currentRoom, ':', newTitle);
+
+    // Save the new title to the room
+    room.title = newTitle;
+
+    // Broadcast to all users in room (including sender)
+    io.to(currentRoom).emit('board-title-change', newTitle);
   });
 
   socket.on('disconnect', () => {

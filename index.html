@@ -100,6 +100,9 @@
                 socket.on('room-state', (state) => {
                     setMessages(state.messages || []);
                     setUserCount(state.userCount || 0);
+                    if (state.title) {
+                        setBoardTitle(state.title);
+                    }
                 });
 
                 socket.on('new-message', (message) => {
@@ -127,6 +130,11 @@
 
                 socket.on('edit-message', ({ id, text }) => {
                     setMessages(prev => prev.map(m => m.id === id ? { ...m, text } : m));
+                });
+
+                socket.on('board-title-change', (newTitle) => {
+                    console.log('Board title changed by another user:', newTitle);
+                    setBoardTitle(newTitle);
                 });
 
                 return () => {
@@ -258,8 +266,20 @@
                                         type="text"
                                         value={boardTitle}
                                         onChange={(e) => setBoardTitle(e.target.value)}
-                                        onBlur={() => setIsEditingTitle(false)}
-                                        onKeyDown={(e) => e.key === 'Enter' && setIsEditingTitle(false)}
+                                        onBlur={() => {
+                                            setIsEditingTitle(false);
+                                            if (socketRef.current) {
+                                                socketRef.current.emit('board-title-change', boardTitle);
+                                            }
+                                        }}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                setIsEditingTitle(false);
+                                                if (socketRef.current) {
+                                                    socketRef.current.emit('board-title-change', boardTitle);
+                                                }
+                                            }
+                                        }}
                                         className="font-bold text-base sm:text-lg leading-tight border-b-2 border-indigo-500 outline-none bg-transparent w-full"
                                     />
                                 ) : (
