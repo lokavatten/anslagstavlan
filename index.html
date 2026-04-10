@@ -371,6 +371,13 @@
                     setBoardTitle(newTitle);
                 });
 
+                socket.on('upload-error', (errorMessage) => {
+                    console.error('Upload error from server:', errorMessage);
+                    setUploadError(errorMessage);
+                    // Re-enable file picker
+                    setFile(null);
+                });
+
                 socket.on('error', (error) => {
                     console.error('Socket.io error:', error);
                     setUploadError('Anslutningsfel uppstod. Försök igen.');
@@ -463,17 +470,23 @@
                         try {
                             const isImage = file.type.startsWith('image/');
                             const base64Data = event.target.result; // base64 string with "data:..." prefix
-                            const base64Size = new Blob([base64Data]).size;
-                            const base64SizeInMB = base64Size / (1024 * 1024);
+
+                            // Measure base64 size accurately
+                            // Using Blob to get actual byte size when encoded as UTF-8
+                            const base64Blob = new Blob([base64Data]);
+                            const base64SizeBytes = base64Blob.size;
+                            const base64SizeInMB = base64SizeBytes / (1024 * 1024);
                             const socketIOBufferLimit = 15; // MB
 
                             console.log('File:', file.name);
                             console.log('Original size:', (file.size / 1024).toFixed(1), 'KB');
-                            console.log('Base64 encoded size:', (base64SizeInMB).toFixed(2), 'MB');
+                            console.log('Base64 string length:', base64Data.length, 'characters');
+                            console.log('Base64 Blob size:', base64SizeBytes.toLocaleString(), 'bytes', '≈', (base64SizeInMB).toFixed(2), 'MB');
 
                             // Validate base64 size against Socket.io buffer limit
                             if (base64SizeInMB > socketIOBufferLimit) {
                                 setUploadError(`Filen är för stor för överföring. Kodad storlek: ${(base64SizeInMB).toFixed(2)} MB (max ${socketIOBufferLimit} MB).`);
+                                console.warn('File rejected: exceeds Socket.io buffer limit');
                                 return;
                             }
 
@@ -490,9 +503,10 @@
                             // Send via Socket.io
                             if (socketRef.current) {
                                 socketRef.current.emit('new-message', newMsg);
+                                // Clear UI after sending
+                                setNewMessage('');
+                                setFile(null);
                             }
-                            setNewMessage('');
-                            setFile(null);
                         } catch (error) {
                             console.error('Error processing file:', error);
                             setUploadError('Ett fel uppstod vid bearbetning av filen.');

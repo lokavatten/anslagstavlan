@@ -117,6 +117,17 @@ io.on('connection', (socket) => {
     console.log('Server received message:', data.text ? data.text.slice(0, 50) : '(no text)');
     if (data.file) {
       console.log('Server received file:', data.file.name, 'Size:', data.file.size);
+
+      // Validate file size (base64 data is typically larger than original)
+      const base64Size = Buffer.byteLength(data.file.data, 'utf8');
+      const base64SizeInMB = base64Size / (1024 * 1024);
+      const maxSize = 15; // MB
+
+      if (base64SizeInMB > maxSize) {
+        console.log(`File rejected: ${(base64SizeInMB).toFixed(2)} MB exceeds ${maxSize} MB limit`);
+        socket.emit('upload-error', `Servern avvisade filen: ${(base64SizeInMB).toFixed(2)} MB är för stor.`);
+        return;
+      }
     }
 
     const message = {

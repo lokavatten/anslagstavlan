@@ -10,7 +10,8 @@
       "Bash(git commit:*)",
       "Bash(git remote:*)",
       "Bash(git push:*)",
-      "Bash(pkill -f \"npm start\")"
+      "Bash(pkill -f \"npm start\")",
+      "Bash(pkill -f \"node server.js\")"
     ]
   }
 }
