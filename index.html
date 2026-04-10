@@ -159,7 +159,9 @@
             const [imageSize, setImageSize] = useState('full'); // 'full', 'half', 'small'
             const [displayMode, setDisplayMode] = useState('normal'); // 'normal', 'dynamic'
             const [expandedMessageId, setExpandedMessageId] = useState(null);
-            const [currentPage, setCurrentPage] = useState('board');
+            const [currentPage, setCurrentPage] = useState(() => {
+                return window.location.pathname === '/stats' ? 'stats' : 'board';
+            });
             const socketRef = useRef(null);
             const messagesEndRef = useRef(null);
             const titleInputRef = useRef(null);
@@ -187,10 +189,10 @@
                 else setImageSize('full');
             };
 
-            // Monitor URL changes and determine page
+            // Monitor browser back/forward navigation
             useEffect(() => {
-                const handleUrlChange = () => {
-                    console.log('URL changed:', window.location.pathname);
+                const handlePopState = () => {
+                    console.log('Popstate - URL now:', window.location.pathname);
                     if (window.location.pathname === '/stats') {
                         setCurrentPage('stats');
                     } else {
@@ -198,12 +200,9 @@
                     }
                 };
 
-                // Initial check
-                handleUrlChange();
-
-                // Listen for popstate (back/forward button)
-                window.addEventListener('popstate', handleUrlChange);
-                return () => window.removeEventListener('popstate', handleUrlChange);
+                // Only listen for popstate (back/forward button)
+                window.addEventListener('popstate', handlePopState);
+                return () => window.removeEventListener('popstate', handlePopState);
             }, []);
 
             // Initialize Socket.io connection and room for board page
