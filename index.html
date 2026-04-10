@@ -318,9 +318,31 @@
                                                     </div>
                                                 </div>
                                                 {msg.file.data && (
-                                                    <a href={msg.file.data} download={msg.file.name} className="p-2 hover:bg-blue-100 text-blue-600 rounded-lg">
+                                                    <button
+                                                        onClick={async () => {
+                                                            try {
+                                                                // Fetch the data URL and convert to blob
+                                                                const response = await fetch(msg.file.data);
+                                                                const blob = await response.blob();
+
+                                                                // Create download link
+                                                                const url = URL.createObjectURL(blob);
+                                                                const link = document.createElement('a');
+                                                                link.href = url;
+                                                                link.download = msg.file.name;
+                                                                document.body.appendChild(link);
+                                                                link.click();
+                                                                document.body.removeChild(link);
+                                                                URL.revokeObjectURL(url);
+                                                            } catch (error) {
+                                                                console.error('Download failed:', error);
+                                                                alert('Nedladdning misslyckades');
+                                                            }
+                                                        }}
+                                                        className="p-2 hover:bg-blue-100 text-blue-600 rounded-lg"
+                                                    >
                                                         <Icon name="download" size={18} />
-                                                    </a>
+                                                    </button>
                                                 )}
                                             </div>
                                         </div>
