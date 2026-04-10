@@ -38,24 +38,45 @@
 
         function StatsPage() {
             const [stats, setStats] = useState({ totalRooms: 0, totalUsers: 0, rooms: [] });
+            const [loading, setLoading] = useState(true);
             const statsRefreshRef = useRef(null);
 
             useEffect(() => {
+                console.log('StatsPage mounted');
+                setLoading(true);
+
                 const fetchStats = async () => {
                     try {
                         const response = await fetch('/api/stats');
                         const data = await response.json();
+                        console.log('Fetched stats:', data);
                         setStats(data);
+                        setLoading(false);
                     } catch (error) {
                         console.error('Failed to fetch stats:', error);
+                        setLoading(false);
                     }
                 };
 
                 fetchStats();
                 statsRefreshRef.current = setInterval(fetchStats, 2000);
 
-                return () => clearInterval(statsRefreshRef.current);
+                return () => {
+                    console.log('StatsPage unmounting');
+                    clearInterval(statsRefreshRef.current);
+                };
             }, []);
+
+            if (loading) {
+                return (
+                    <div className="flex flex-col h-screen bg-slate-50 items-center justify-center">
+                        <div className="text-center">
+                            <div className="w-12 h-12 border-4 border-slate-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-4"></div>
+                            <p className="text-slate-600">Hämtar statistik...</p>
+                        </div>
+                    </div>
+                );
+            }
 
             return (
                 <div className="flex flex-col h-screen bg-slate-50">
@@ -207,7 +228,14 @@
 
             // Initialize Socket.io connection and room for board page
             useEffect(() => {
-                if (currentPage === 'stats') return;
+                // If on stats page, disconnect any existing socket
+                if (currentPage === 'stats') {
+                    if (socketRef.current) {
+                        socketRef.current.disconnect();
+                        socketRef.current = null;
+                    }
+                    return;
+                }
 
                 // Get or create room ID from URL hash
                 let currentRoomId = window.location.hash.slice(1);
@@ -268,7 +296,7 @@
                 return () => {
                     socket.disconnect();
                 };
-            }, []);
+            }, [currentPage]);
 
             useEffect(() => {
                 document.title = boardTitle;
@@ -379,10 +407,11 @@
                 });
             };
 
-            // Determine which page to show - check both state and pathname
-            const isStatsPage = currentPage === 'stats' || window.location.pathname === '/stats';
+            // Determine which page to show - check pathname directly for reliability
+            const pathName = window.location.pathname;
+            console.log('Rendering - currentPage:', currentPage, 'pathname:', pathName);
 
-            if (isStatsPage) {
+            if (pathName === '/stats') {
                 return <StatsPage />;
             }
 
