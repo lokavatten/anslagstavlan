@@ -48,10 +48,33 @@
             const [editingId, setEditingId] = useState(null);
             const [editText, setEditText] = useState('');
             const [showVersion, setShowVersion] = useState(false);
+            const [imageSize, setImageSize] = useState('full'); // 'full', 'half', 'small'
             const socketRef = useRef(null);
             const messagesEndRef = useRef(null);
             const titleInputRef = useRef(null);
             const version = '1.1.0';
+
+            const getImageSizeClass = () => {
+                switch(imageSize) {
+                    case 'half': return 'max-h-24 sm:max-h-32';
+                    case 'small': return 'max-h-16 sm:max-h-20';
+                    default: return 'max-h-48';
+                }
+            };
+
+            const getImageSizeLabel = () => {
+                switch(imageSize) {
+                    case 'half': return '50%';
+                    case 'small': return '25%';
+                    default: return '100%';
+                }
+            };
+
+            const toggleImageSize = () => {
+                if (imageSize === 'full') setImageSize('half');
+                else if (imageSize === 'half') setImageSize('small');
+                else setImageSize('full');
+            };
 
             // Initialize Socket.io connection and room
             useEffect(() => {
@@ -245,9 +268,14 @@
                                 </span>
                             )}
                             {messages.length > 0 && (
-                                <button onClick={clearBoard} className="p-1.5 sm:p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all">
-                                    <Icon name="trash-2" size={16} />
-                                </button>
+                                <>
+                                    <button onClick={toggleImageSize} title="Ändra bildstorlek" className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 rounded-full transition-all" style={{fontSize: '11px', fontWeight: '600', minWidth: '32px'}}>
+                                        {getImageSizeLabel()}
+                                    </button>
+                                    <button onClick={clearBoard} className="p-1.5 sm:p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all">
+                                        <Icon name="trash-2" size={16} />
+                                    </button>
+                                </>
                             )}
                             <button onClick={() => setShowShareModal(true)} className="flex items-center gap-1 sm:gap-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-2 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold">
                                 <Icon name="share-2" size={14} /> <span className="hidden sm:inline">Dela</span>
@@ -314,7 +342,7 @@
                                         <div className="bg-blue-50 border border-blue-200 rounded-lg sm:rounded-xl p-2 sm:p-3">
                                             {msg.file.isImage ? (
                                                 <div className="flex flex-col gap-2">
-                                                    <img src={msg.file.data} alt={msg.file.name} className="w-full max-h-48 object-cover rounded-md" />
+                                                    <img src={msg.file.data} alt={msg.file.name} className={`w-full object-cover rounded-md ${getImageSizeClass()}`} />
                                                     <div className="flex items-center justify-between gap-2">
                                                         <div className="flex flex-col overflow-hidden min-w-0">
                                                             <span className="text-xs font-bold truncate text-slate-700">{msg.file.name}</span>
@@ -402,20 +430,20 @@
                                 {file && (
                                     <div className="flex items-center justify-between bg-indigo-50 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl border border-indigo-100 text-sm gap-2">
                                         {file.type.startsWith('image/') ? (
-                                            <div className="flex items-center gap-2 overflow-hidden">
+                                            <div className="flex items-center gap-2 overflow-hidden flex-1">
                                                 <img src={URL.createObjectURL(file)} alt={file.name} className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded shrink-0" />
-                                                <div className="flex flex-col overflow-hidden">
+                                                <div className="flex flex-col overflow-hidden flex-1">
                                                     <span className="text-xs font-bold text-indigo-700 truncate">{file.name}</span>
                                                     <span className="text-[10px] text-indigo-600">{(file.size / 1024).toFixed(1)} KB</span>
                                                 </div>
                                             </div>
                                         ) : (
-                                            <div className="flex items-center gap-2 overflow-hidden">
+                                            <div className="flex items-center gap-2 overflow-hidden flex-1">
                                                 <Icon name="paperclip" size={14} className="text-indigo-500 shrink-0" />
                                                 <span className="text-xs font-bold text-indigo-700 truncate">{file.name}</span>
                                             </div>
                                         )}
-                                        <button type="button" onClick={() => setFile(null)} className="text-indigo-400 hover:text-indigo-600 p-1 shrink-0"><Icon name="x" size={14}/></button>
+                                        <button type="button" onClick={() => setFile(null)} className="text-indigo-400 hover:text-indigo-600 p-1 shrink-0 ml-auto"><Icon name="x" size={14}/></button>
                                     </div>
                                 )}
                                 <div className="flex items-end gap-2">
