@@ -144,7 +144,7 @@
             const [imageSize, setImageSize] = useState('full'); // 'full', 'half', 'small'
             const [displayMode, setDisplayMode] = useState('normal'); // 'normal', 'dynamic'
             const [expandedMessageId, setExpandedMessageId] = useState(null);
-            const [isStatsPage, setIsStatsPage] = useState(false);
+            const [currentPage, setCurrentPage] = useState('board');
             const socketRef = useRef(null);
             const messagesEndRef = useRef(null);
             const titleInputRef = useRef(null);
@@ -174,10 +174,12 @@
 
             // Initialize Socket.io connection and room
             useEffect(() => {
-                // Check if on stats page
+                // Determine current page based on pathname
                 if (window.location.pathname === '/stats') {
-                    setIsStatsPage(true);
+                    setCurrentPage('stats');
                     return;
+                } else {
+                    setCurrentPage('board');
                 }
 
                 // Get or create room ID from URL hash
@@ -253,8 +255,20 @@
                     }
                 };
 
+                const handlePopState = () => {
+                    if (window.location.pathname === '/stats') {
+                        setCurrentPage('stats');
+                    } else {
+                        setCurrentPage('board');
+                    }
+                };
+
                 window.addEventListener('keydown', handleEscapeKey);
-                return () => window.removeEventListener('keydown', handleEscapeKey);
+                window.addEventListener('popstate', handlePopState);
+                return () => {
+                    window.removeEventListener('keydown', handleEscapeKey);
+                    window.removeEventListener('popstate', handlePopState);
+                };
             }, []);
 
             useEffect(() => {
@@ -350,7 +364,7 @@
                 });
             };
 
-            if (isStatsPage) {
+            if (currentPage === 'stats') {
                 return <StatsPage />;
             }
 
