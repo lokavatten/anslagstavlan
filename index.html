@@ -246,6 +246,7 @@
             const [pinInput, setPinInput] = useState('');
             const [pinError, setPinError] = useState('');
             const [pinLoading, setPinLoading] = useState(false);
+            const [uploadError, setUploadError] = useState('');
             const socketRef = useRef(null);
             const messagesEndRef = useRef(null);
             const titleInputRef = useRef(null);
@@ -370,6 +371,15 @@
                     setBoardTitle(newTitle);
                 });
 
+                socket.on('error', (error) => {
+                    console.error('Socket.io error:', error);
+                    setUploadError('Anslutningsfel uppstod. Försök igen.');
+                });
+
+                socket.on('disconnect', () => {
+                    console.log('Socket disconnected');
+                });
+
                 return () => {
                     socket.disconnect();
                 };
@@ -432,9 +442,11 @@
                 if (e) e.preventDefault();
                 if (!newMessage.trim() && !file) return;
 
-                // Validate file size (10 MB max)
+                setUploadError('');
+
+                // Validate file size (10 MB max before encoding)
                 if (file && file.size > 10 * 1024 * 1024) {
-                    alert('Filen är för stor. Max 10 MB.');
+                    setUploadError('Filen är för stor. Max 10 MB.');
                     return;
                 }
 
@@ -448,24 +460,47 @@
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = (event) => {
-                        const isImage = file.type.startsWith('image/');
-                        newMsg.file = {
-                            name: file.name,
-                            type: file.type,
-                            size: (file.size / 1024).toFixed(1) + " KB",
-                            data: event.target.result, // base64
-                            isImage: isImage
-                        };
-                        console.log('Sending file:', newMsg.file.name, 'Size:', newMsg.file.size, 'IsImage:', isImage);
-                        // Send via Socket.io
-                        if (socketRef.current) {
-                            socketRef.current.emit('new-message', newMsg);
+                        try {
+                            const isImage = file.type.startsWith('image/');
+                            const base64Data = event.target.result; // base64 string with "data:..." prefix
+                            const base64Size = new Blob([base64Data]).size;
+                            const base64SizeInMB = base64Size / (1024 * 1024);
+                            const socketIOBufferLimit = 15; // MB
+
+                            console.log('File:', file.name);
+                            console.log('Original size:', (file.size / 1024).toFixed(1), 'KB');
+                            console.log('Base64 encoded size:', (base64SizeInMB).toFixed(2), 'MB');
+
+                            // Validate base64 size against Socket.io buffer limit
+                            if (base64SizeInMB > socketIOBufferLimit) {
+                                setUploadError(`Filen är för stor för överföring. Kodad storlek: ${(base64SizeInMB).toFixed(2)} MB (max ${socketIOBufferLimit} MB).`);
+                                return;
+                            }
+
+                            newMsg.file = {
+                                name: file.name,
+                                type: file.type,
+                                size: (file.size / 1024).toFixed(1) + " KB",
+                                data: base64Data,
+                                isImage: isImage
+                            };
+
+                            console.log('Sending file:', newMsg.file.name, 'Size:', newMsg.file.size, 'IsImage:', isImage);
+
+                            // Send via Socket.io
+                            if (socketRef.current) {
+                                socketRef.current.emit('new-message', newMsg);
+                            }
+                            setNewMessage('');
+                            setFile(null);
+                        } catch (error) {
+                            console.error('Error processing file:', error);
+                            setUploadError('Ett fel uppstod vid bearbetning av filen.');
                         }
-                        setNewMessage('');
-                        setFile(null);
                     };
                     reader.onerror = (error) => {
                         console.error('File read error:', error);
+                        setUploadError('Det gick inte att läsa filen. Försök igen.');
                     };
                     reader.readAsDataURL(file);
                 } else {
@@ -746,6 +781,13 @@
                     <footer className="bg-white border-t p-3 sm:p-4">
                         <form onSubmit={handleSendMessage} className="max-w-4xl mx-auto">
                             <div className="flex flex-col gap-2 sm:gap-3">
+                                {uploadError && (
+                                    <div className="flex items-center gap-2 bg-red-50 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl border border-red-200 text-sm">
+                                        <Icon name="alert-circle" size={16} className="text-red-600 shrink-0" />
+                                        <p className="text-red-700 flex-1">{uploadError}</p>
+                                        <button type="button" onClick={() => setUploadError('')} className="text-red-400 hover:text-red-600 p-1 shrink-0"><Icon name="x" size={14}/></button>
+                                    </div>
+                                )}
                                 {file && (
                                     <div className="flex items-center justify-between bg-indigo-50 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl border border-indigo-100 text-sm gap-2">
                                         {file.type.startsWith('image/') ? (
