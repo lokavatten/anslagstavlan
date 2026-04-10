@@ -15,6 +15,8 @@
         body { font-family: 'Inter', sans-serif; }
         .animate-in { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-pulse-button { animation: buttonPulse 2s infinite; }
+        @keyframes buttonPulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); } 50% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); } }
     </style>
 </head>
 <body class="bg-slate-50">
@@ -202,10 +204,10 @@
             return (
                 <div className="flex flex-col h-screen text-slate-900">
                     {/* Header */}
-                    <header className="bg-white border-b px-6 py-4 flex justify-between items-center shadow-sm z-10">
-                        <div className="flex items-center gap-3">
-                            <div className="bg-indigo-600 p-2 rounded-lg shrink-0 flex items-center justify-center">
-                                <Icon name="message-square" className="text-white" />
+                    <header className="bg-white border-b px-3 sm:px-6 py-3 sm:py-4 flex justify-between items-center shadow-sm z-10 flex-wrap gap-2">
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                            <div className="bg-indigo-600 p-1.5 sm:p-2 rounded-lg shrink-0 flex items-center justify-center">
+                                <Icon name="message-square" size={18} className="text-white sm:w-5 sm:h-5" />
                             </div>
                             <div className="flex flex-col min-w-0">
                                 {isEditingTitle ? (
@@ -216,70 +218,70 @@
                                         onChange={(e) => setBoardTitle(e.target.value)}
                                         onBlur={() => setIsEditingTitle(false)}
                                         onKeyDown={(e) => e.key === 'Enter' && setIsEditingTitle(false)}
-                                        className="font-bold text-lg leading-tight border-b-2 border-indigo-500 outline-none bg-transparent w-full"
+                                        className="font-bold text-base sm:text-lg leading-tight border-b-2 border-indigo-500 outline-none bg-transparent w-full"
                                     />
                                 ) : (
-                                    <div 
-                                        className="flex items-center gap-2 group cursor-pointer"
+                                    <div
+                                        className="flex items-center gap-1 sm:gap-2 group cursor-pointer"
                                         onClick={() => setIsEditingTitle(true)}
                                     >
-                                        <h1 className="font-bold text-lg leading-tight truncate">
+                                        <h1 className="font-bold text-base sm:text-lg leading-tight truncate">
                                             {boardTitle || 'Namnlös Tavla'}
                                         </h1>
-                                        <Icon name="edit-2" size={14} className="text-slate-300 group-hover:text-indigo-500 transition-colors" />
+                                        <Icon name="edit-2" size={12} className="text-slate-300 group-hover:text-indigo-500 transition-colors shrink-0 hidden sm:block" />
                                     </div>
                                 )}
-                                <p className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Ingen lagring • Endast session</p>
+                                <p className="text-[8px] sm:text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Ingen lagring</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                             {userCount > 0 && (
-                                <span className="text-xs text-slate-500 font-medium px-3 py-1 bg-slate-100 rounded-full">
-                                    {userCount} aktiv{userCount !== 1 ? 'a' : ''}
+                                <span className="text-xs text-slate-500 font-medium px-2 sm:px-3 py-1 bg-slate-100 rounded-full">
+                                    {userCount}
                                 </span>
                             )}
                             {messages.length > 0 && (
-                                <button onClick={clearBoard} className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all">
-                                    <Icon name="trash-2" size={18} />
+                                <button onClick={clearBoard} className="p-1.5 sm:p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all">
+                                    <Icon name="trash-2" size={16} />
                                 </button>
                             )}
-                            <button onClick={() => setShowShareModal(true)} className="flex items-center gap-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-4 py-2 rounded-full text-sm font-semibold">
-                                <Icon name="share-2" size={16} /> Dela
+                            <button onClick={() => setShowShareModal(true)} className="flex items-center gap-1 sm:gap-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 px-2 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-semibold">
+                                <Icon name="share-2" size={14} /> <span className="hidden sm:inline">Dela</span>
                             </button>
                         </div>
                     </header>
 
-                    <div className="bg-indigo-600 text-white px-6 py-2 flex items-center justify-center gap-2 text-xs">
-                        <Icon name="info" size={14} />
-                        <span>Delad tavla. Innehållet raderas när alla användare lämnar.</span>
+                    <div className="bg-indigo-600 text-white px-3 sm:px-6 py-2 flex items-center justify-center gap-2 text-xs text-center">
+                        <Icon name="info" size={12} className="shrink-0" />
+                        <span>Tavlan raderas när alla lämnar</span>
                     </div>
 
                     {/* Board */}
-                    <main className="flex-1 overflow-y-auto p-6">
-                        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <main className="flex-1 overflow-y-auto p-3 sm:p-6">
+                        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                             {messages.length === 0 && (
-                                <div className="col-span-full flex flex-col items-center justify-center py-20 text-slate-400 border-2 border-dashed border-slate-200 rounded-3xl">
-                                    <Icon name="message-square" size={48} className="mb-4 opacity-20" />
-                                    <p className="font-medium text-lg text-slate-500">Tavlan är redo</p>
+                                <div className="col-span-full flex flex-col items-center justify-center py-12 sm:py-20 text-slate-400 border-2 border-dashed border-slate-200 rounded-2xl sm:rounded-3xl">
+                                    <Icon name="message-square" size={40} className="mb-3 sm:mb-4 opacity-20 sm:w-12 sm:h-12" />
+                                    <p className="font-medium text-base sm:text-lg text-slate-500">Tavlan är redo</p>
                                     <p className="text-sm text-center">Skriv något nedan för att börja.</p>
                                 </div>
                             )}
                             
                             {messages.map((msg) => (
-                                <div key={msg.id} className="p-4 rounded-2xl shadow-sm border border-slate-200 bg-white animate-in relative group">
-                                    <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                                <div key={msg.id} className="p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 bg-white animate-in relative group">
+                                    <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
                                         <button onClick={() => { setEditingId(msg.id); setEditText(msg.text); }} className="p-1 text-slate-300 hover:text-indigo-500 hover:bg-indigo-50 rounded-md transition-all">
-                                            <Icon name="edit-2" size={16} />
+                                            <Icon name="edit-2" size={14} className="sm:w-4 sm:h-4" />
                                         </button>
                                         <button onClick={() => deleteMessage(msg.id)} className="p-1 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-md transition-all">
-                                            <Icon name="x" size={16} />
+                                            <Icon name="x" size={14} className="sm:w-4 sm:h-4" />
                                         </button>
                                     </div>
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center">
-                                            <Icon name="user" size={12} className="text-indigo-600" />
+                                    <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                                        <div className="w-5 sm:w-6 h-5 sm:h-6 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
+                                            <Icon name="user" size={10} className="text-indigo-600 sm:w-3 sm:h-3" />
                                         </div>
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Session Post</span>
+                                        <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Inlägg</span>
                                     </div>
                                     {msg.text !== undefined && (
                                         editingId === msg.id ? (
@@ -292,12 +294,12 @@
                                                     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveEdit(msg.id); }
                                                     if (e.key === 'Escape') setEditingId(null);
                                                 }}
-                                                className="w-full text-slate-800 text-sm leading-relaxed bg-slate-50 border border-indigo-300 rounded-lg px-2 py-1 resize-none outline-none focus:ring-2 focus:ring-indigo-400 mb-3"
+                                                className="w-full text-slate-800 text-sm leading-relaxed bg-slate-50 border border-indigo-300 rounded-md sm:rounded-lg px-2 py-1 resize-none outline-none focus:ring-2 focus:ring-indigo-400 mb-3"
                                                 rows={3}
                                             />
                                         ) : (
                                             <p
-                                                className="text-slate-800 mb-3 whitespace-pre-wrap leading-relaxed text-sm pr-4 cursor-text hover:bg-slate-50 rounded px-1 -mx-1"
+                                                className="text-slate-800 mb-3 whitespace-pre-wrap leading-relaxed text-sm pr-3 sm:pr-4 cursor-text hover:bg-slate-50 rounded px-1 -mx-1"
                                                 onClick={() => { setEditingId(msg.id); setEditText(msg.text); }}
                                             >
                                                 {msg.text}
@@ -305,16 +307,16 @@
                                         )
                                     )}
                                     {msg.file && (
-                                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
-                                            <p className="text-[10px] text-blue-700 mb-2 font-semibold">📎 Bifogad fil</p>
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3 overflow-hidden">
-                                                    <div className="bg-blue-500 p-2 rounded-lg text-white shrink-0">
-                                                        <Icon name="file-text" size={16} />
+                                        <div className="bg-blue-50 border border-blue-200 rounded-lg sm:rounded-xl p-2 sm:p-3">
+                                            <p className="text-[9px] sm:text-[10px] text-blue-700 mb-2 font-semibold">📎 Bifogad fil</p>
+                                            <div className="flex items-center justify-between gap-2">
+                                                <div className="flex items-center gap-2 sm:gap-3 overflow-hidden">
+                                                    <div className="bg-blue-500 p-1.5 sm:p-2 rounded-md sm:rounded-lg text-white shrink-0">
+                                                        <Icon name="file-text" size={14} className="sm:w-4 sm:h-4" />
                                                     </div>
-                                                    <div className="flex flex-col overflow-hidden">
+                                                    <div className="flex flex-col overflow-hidden min-w-0">
                                                         <span className="text-xs font-bold truncate text-slate-700">{msg.file.name}</span>
-                                                        <span className="text-[10px] text-slate-400">{msg.file.size}</span>
+                                                        <span className="text-[9px] sm:text-[10px] text-slate-400">{msg.file.size}</span>
                                                     </div>
                                                 </div>
                                                 {msg.file.data && (
@@ -339,15 +341,15 @@
                                                                 alert('Nedladdning misslyckades');
                                                             }
                                                         }}
-                                                        className="p-2 hover:bg-blue-100 text-blue-600 rounded-lg"
+                                                        className="p-1.5 sm:p-2 hover:bg-blue-100 text-blue-600 rounded-md sm:rounded-lg shrink-0"
                                                     >
-                                                        <Icon name="download" size={18} />
+                                                        <Icon name="download" size={16} className="sm:w-5 sm:h-5" />
                                                     </button>
                                                 )}
                                             </div>
                                         </div>
                                     )}
-                                    <div className="mt-3 text-[10px] text-slate-300 text-right font-medium">{msg.timestamp}</div>
+                                    <div className="mt-2 sm:mt-3 text-[9px] sm:text-[10px] text-slate-300 text-right font-medium">{msg.timestamp}</div>
                                 </div>
                             ))}
                             <div ref={messagesEndRef} />
@@ -355,16 +357,16 @@
                     </main>
 
                     {/* Footer */}
-                    <footer className="bg-white border-t p-4">
+                    <footer className="bg-white border-t p-3 sm:p-4">
                         <form onSubmit={handleSendMessage} className="max-w-4xl mx-auto">
-                            <div className="flex flex-col gap-3">
+                            <div className="flex flex-col gap-2 sm:gap-3">
                                 {file && (
-                                    <div className="flex items-center justify-between bg-indigo-50 px-4 py-2 rounded-xl border border-indigo-100">
+                                    <div className="flex items-center justify-between bg-indigo-50 px-3 sm:px-4 py-2 rounded-lg sm:rounded-xl border border-indigo-100 text-sm">
                                         <div className="flex items-center gap-2 overflow-hidden">
-                                            <Icon name="paperclip" size={16} className="text-indigo-500" />
+                                            <Icon name="paperclip" size={14} className="text-indigo-500 shrink-0" />
                                             <span className="text-xs font-bold text-indigo-700 truncate">{file.name}</span>
                                         </div>
-                                        <button type="button" onClick={() => setFile(null)} className="text-indigo-400 hover:text-indigo-600 p-1"><Icon name="x" size={16}/></button>
+                                        <button type="button" onClick={() => setFile(null)} className="text-indigo-400 hover:text-indigo-600 p-1 shrink-0"><Icon name="x" size={14}/></button>
                                     </div>
                                 )}
                                 <div className="flex items-end gap-2">
@@ -372,18 +374,18 @@
                                         <textarea
                                             value={newMessage}
                                             onChange={(e) => setNewMessage(e.target.value)}
-                                            placeholder="Skriv något flyktigt..."
-                                            className="w-full border border-slate-200 rounded-2xl px-4 py-4 pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none max-h-32 min-h-[56px] text-sm shadow-inner"
+                                            placeholder="Skriv något..."
+                                            className="w-full border border-slate-200 rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2 sm:py-4 pr-10 sm:pr-12 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none max-h-32 min-h-[44px] sm:min-h-[56px] text-sm shadow-inner"
                                             rows="1"
                                             onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
                                         />
-                                        <label className="absolute right-3 bottom-3 cursor-pointer p-2 hover:bg-slate-100 rounded-xl">
+                                        <label className="absolute right-2 sm:right-3 bottom-2 sm:bottom-3 cursor-pointer p-1.5 hover:bg-slate-100 rounded-lg shrink-0">
                                             <input type="file" className="hidden" onChange={(e) => setFile(e.target.files[0])} />
-                                            <Icon name="paperclip" size={20} className="text-slate-400" />
+                                            <Icon name="paperclip" size={18} className="text-slate-400" />
                                         </label>
                                     </div>
-                                    <button type="submit" disabled={!newMessage.trim() && !file} className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 text-white p-4 rounded-2xl shadow-md transition-all active:scale-95">
-                                        <Icon name="send" size={22} />
+                                    <button type="submit" disabled={!newMessage.trim() && !file} className={`text-white p-2.5 sm:p-4 rounded-xl sm:rounded-2xl shadow-md transition-all active:scale-95 shrink-0 ${(file || newMessage.trim()) ? 'bg-indigo-700 animate-pulse-button' : 'bg-indigo-600 hover:bg-indigo-700'} ${!newMessage.trim() && !file ? 'disabled:bg-slate-200' : ''}`}>
+                                        <Icon name="send" size={18} className="sm:w-6 sm:h-6" />
                                     </button>
                                 </div>
                             </div>
@@ -392,26 +394,24 @@
 
                     {/* Modal */}
                     {showShareModal && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
-                            <div className="bg-white rounded-[32px] shadow-2xl w-full max-w-sm overflow-hidden p-8 flex flex-col items-center">
-                                <div className="w-full flex justify-end">
-                                    <button onClick={() => setShowShareModal(false)} className="p-2 text-slate-400"><Icon name="x" size={20}/></button>
-                                </div>
-                                <div className="bg-indigo-600 p-8 rounded-3xl shadow-xl shadow-indigo-100 mb-6 flex items-center justify-center">
-                                    <Icon name="share-2" size={64} className="text-white" />
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-md">
+                            <div className="bg-white rounded-2xl sm:rounded-[32px] shadow-2xl w-full max-w-sm overflow-hidden p-4 sm:p-8 flex flex-col items-center relative">
+                                <button onClick={() => setShowShareModal(false)} className="absolute top-3 right-3 p-2 text-slate-400 hover:text-slate-600 z-10"><Icon name="x" size={20}/></button>
+                                <div className="bg-indigo-600 p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-xl shadow-indigo-100 mb-4 sm:mb-6 flex items-center justify-center">
+                                    <Icon name="share-2" size={48} className="text-white sm:w-16 sm:h-16" />
                                 </div>
                                 <h3 className="text-lg font-bold text-slate-800 mb-2">Dela Tavlan</h3>
-                                <p className="text-center text-sm text-slate-500 mb-3 leading-relaxed">Skicka denna länk för att dela tavlan med andra.</p>
-                                <p className="text-center text-xs text-slate-400 mb-6 leading-relaxed px-2 py-2 bg-slate-50 rounded-lg">📎 Obs: Filöverföringar delas inte — bara textmeddelanden synkas mellan användare.</p>
-                                <div className="flex flex-col items-center gap-4 mb-6">
+                                <p className="text-center text-sm text-slate-500 mb-2 sm:mb-3 leading-relaxed">Skicka denna länk för att dela tavlan med andra.</p>
+                                <p className="text-center text-xs text-slate-400 mb-4 sm:mb-6 leading-relaxed px-2 py-2 bg-slate-50 rounded-lg">📎 Textmeddelanden synkas mellan användare.</p>
+                                <div className="flex flex-col items-center gap-2 sm:gap-4 mb-4 sm:mb-6 w-full">
                                     <img
-                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(window.location.href)}`}
+                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(window.location.href)}`}
                                         alt="QR Code"
-                                        className="border-4 border-slate-200 rounded-xl"
+                                        className="border-4 border-slate-200 rounded-lg sm:rounded-xl w-40 h-40 sm:w-48 sm:h-48"
                                     />
-                                    <p className="text-[10px] text-slate-400">Skanna QR-koden för att dela direkt</p>
+                                    <p className="text-[10px] text-slate-400 text-center">Skanna med kameran</p>
                                 </div>
-                                <button onClick={copyToClipboard} className={`w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-bold transition-all shadow-lg ${copied ? 'bg-green-500 text-white' : 'bg-indigo-600 text-white'}`}>
+                                <button onClick={copyToClipboard} className={`w-full flex items-center justify-center gap-2 py-3 sm:py-4 rounded-2xl font-bold transition-all shadow-lg ${copied ? 'bg-green-500 text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>
                                     {copied ? <><Icon name="check" size={18}/> Kopierat!</> : <><Icon name="copy" size={18}/> Kopiera Länk</>}
                                 </button>
                             </div>
