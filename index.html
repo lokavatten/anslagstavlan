@@ -93,8 +93,7 @@
                             </div>
                             <button
                                 onClick={() => {
-                                    window.history.pushState({}, '', '/');
-                                    setCurrentPage('board');
+                                    window.history.back();
                                 }}
                                 className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 px-4 py-2 rounded-lg transition-all font-semibold text-sm"
                             >
@@ -127,13 +126,10 @@
                                 ) : (
                                     <div className="grid gap-4">
                                         {stats.rooms.map((room) => (
-                                            <button
+                                            <a
                                                 key={room.id}
-                                                onClick={() => {
-                                                    window.history.pushState({}, '', `/#${room.id}`);
-                                                    setCurrentPage('board');
-                                                }}
-                                                className="w-full text-left bg-white border border-slate-200 rounded-xl p-4 hover:border-indigo-500 hover:shadow-md transition-all"
+                                                href={`/#${room.id}`}
+                                                className="block bg-white border border-slate-200 rounded-xl p-4 hover:border-indigo-500 hover:shadow-md transition-all"
                                             >
                                                 <div className="flex items-start justify-between mb-3">
                                                     <div className="flex-1 min-w-0">
@@ -149,7 +145,7 @@
                                                     <Icon name="link-2" size={14} />
                                                     Gå till tavla
                                                 </div>
-                                            </button>
+                                            </a>
                                         ))}
                                     </div>
                                 )}
@@ -221,9 +217,20 @@
                     }
                 };
 
-                // Only listen for popstate (back/forward button)
+                // Listen for back/forward button navigation
                 window.addEventListener('popstate', handlePopState);
-                return () => window.removeEventListener('popstate', handlePopState);
+
+                // Also listen for hashchange to catch when user clicks on board links from stats
+                const handleHashChange = () => {
+                    console.log('Hash changed to:', window.location.hash);
+                    setCurrentPage('board');
+                };
+                window.addEventListener('hashchange', handleHashChange);
+
+                return () => {
+                    window.removeEventListener('popstate', handlePopState);
+                    window.removeEventListener('hashchange', handleHashChange);
+                };
             }, []);
 
             // Initialize Socket.io connection and room for board page
