@@ -39,7 +39,34 @@
         function StatsPage() {
             const [stats, setStats] = useState({ totalRooms: 0, totalUsers: 0, rooms: [] });
             const [loading, setLoading] = useState(true);
+            const [pinModal, setPinModal] = useState(null); // { roomId }
+            const [pinInput, setPinInput] = useState('');
+            const [pinError, setPinError] = useState('');
+            const [pinLoading, setPinLoading] = useState(false);
             const statsRefreshRef = useRef(null);
+
+            const handleVerifyPin = async () => {
+                setPinLoading(true);
+                setPinError('');
+                try {
+                    const response = await fetch('/api/verify-pin', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ roomId: pinModal.roomId, pin: pinInput })
+                    });
+                    const data = await response.json();
+                    setPinLoading(false);
+                    if (data.success) {
+                        window.location.href = `/#${pinModal.roomId}`;
+                    } else {
+                        setPinError(data.error || 'Fel PIN');
+                    }
+                } catch (error) {
+                    console.error('PIN verification error:', error);
+                    setPinError('Något gick fel');
+                    setPinLoading(false);
+                }
+            };
 
             useEffect(() => {
                 console.log('StatsPage mounted');
@@ -126,10 +153,14 @@
                                 ) : (
                                     <div className="grid gap-4">
                                         {stats.rooms.map((room) => (
-                                            <a
+                                            <button
                                                 key={room.id}
-                                                href={`/#${room.id}`}
-                                                className="block bg-white border border-slate-200 rounded-xl p-4 hover:border-indigo-500 hover:shadow-md transition-all"
+                                                onClick={() => {
+                                                    setPinModal({ roomId: room.id });
+                                                    setPinInput('');
+                                                    setPinError('');
+                                                }}
+                                                className="w-full text-left bg-white border border-slate-200 rounded-xl p-4 hover:border-indigo-500 hover:shadow-md transition-all"
                                             >
                                                 <div className="flex items-start justify-between mb-3">
                                                     <div className="flex-1 min-w-0">
@@ -142,10 +173,10 @@
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-2 text-xs text-indigo-600 hover:text-indigo-700">
-                                                    <Icon name="link-2" size={14} />
-                                                    Gå till tavla
+                                                    <Icon name="lock" size={14} />
+                                                    Ange PIN för att ansluta
                                                 </div>
-                                            </a>
+                                            </button>
                                         ))}
                                     </div>
                                 )}
@@ -156,6 +187,37 @@
                     <footer className="bg-white border-t p-4 text-center">
                         <p className="text-xs text-slate-400">Uppdateras var 2:a sekund</p>
                     </footer>
+
+                    {/* PIN Modal */}
+                    {pinModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-md">
+                            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col relative">
+                                <button onClick={() => setPinModal(null)} className="absolute top-3 right-3 p-2 text-slate-400 hover:text-slate-600 z-10"><Icon name="x" size={20}/></button>
+                                <div className="p-6">
+                                    <h3 className="text-lg font-bold text-slate-800 mb-4">Ange PIN-kod</h3>
+                                    <p className="text-sm text-slate-600 mb-6">Denna tavla är skyddad. Ange PIN-koden för att ansluta.</p>
+                                    <input
+                                        type="number"
+                                        value={pinInput}
+                                        onChange={(e) => setPinInput(e.target.value.slice(0, 4))}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleVerifyPin()}
+                                        placeholder="0000"
+                                        maxLength="4"
+                                        className="w-full border-2 border-slate-300 rounded-lg px-4 py-3 text-2xl text-center tracking-[0.5em] font-mono focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 mb-4"
+                                        autoFocus
+                                    />
+                                    {pinError && <p className="text-sm text-red-600 mb-4">{pinError}</p>}
+                                    <button
+                                        onClick={handleVerifyPin}
+                                        disabled={pinLoading || pinInput.length !== 4}
+                                        className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white font-bold py-3 rounded-lg transition-all"
+                                    >
+                                        {pinLoading ? 'Verifierar...' : 'Anslut'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             );
         }
@@ -179,6 +241,11 @@
             const [currentPage, setCurrentPage] = useState(() => {
                 return window.location.pathname === '/stats' ? 'stats' : 'board';
             });
+            const [boardPin, setBoardPin] = useState('');
+            const [pinModal, setPinModal] = useState(null); // { roomId }
+            const [pinInput, setPinInput] = useState('');
+            const [pinError, setPinError] = useState('');
+            const [pinLoading, setPinLoading] = useState(false);
             const socketRef = useRef(null);
             const messagesEndRef = useRef(null);
             const titleInputRef = useRef(null);
@@ -266,6 +333,9 @@
                     if (state.title) {
                         setBoardTitle(state.title);
                     }
+                    if (state.pin) {
+                        setBoardPin(state.pin);
+                    }
                 });
 
                 socket.on('new-message', (message) => {
@@ -314,6 +384,7 @@
                     if (e.key === 'Escape') {
                         setExpandedMessageId(null);
                         setShowShareModal(false);
+                        setPinModal(null);
                     }
                 };
 
@@ -332,6 +403,29 @@
                 setTimeout(() => {
                     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
                 }, 50);
+            };
+
+            const handleVerifyPin = async () => {
+                setPinLoading(true);
+                setPinError('');
+                try {
+                    const response = await fetch('/api/verify-pin', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ roomId: pinModal.roomId, pin: pinInput })
+                    });
+                    const data = await response.json();
+                    setPinLoading(false);
+                    if (data.success) {
+                        window.location.href = `/#${pinModal.roomId}`;
+                    } else {
+                        setPinError(data.error || 'Fel PIN');
+                    }
+                } catch (error) {
+                    console.error('PIN verification error:', error);
+                    setPinError('Något gick fel');
+                    setPinLoading(false);
+                }
             };
 
             const handleSendMessage = (e) => {
@@ -746,6 +840,10 @@
                                         className="border-4 border-slate-200 rounded-lg sm:rounded-xl w-40 h-40 sm:w-48 sm:h-48"
                                     />
                                     <p className="text-[10px] text-slate-400 text-center">Skanna med kameran</p>
+                                </div>
+                                <div className="bg-indigo-50 rounded-xl px-6 py-3 text-center w-full mb-4 sm:mb-6">
+                                    <p className="text-xs text-slate-400 mb-2">PIN-kod</p>
+                                    <p className="text-3xl font-bold tracking-[0.3em] text-indigo-700">{boardPin || '----'}</p>
                                 </div>
                                 <button onClick={copyToClipboard} className={`w-full flex items-center justify-center gap-2 py-3 sm:py-4 rounded-2xl font-bold transition-all shadow-lg ${copied ? 'bg-green-500 text-white' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>
                                     {copied ? <><Icon name="check" size={18}/> Kopierat!</> : <><Icon name="copy" size={18}/> Kopiera Länk</>}

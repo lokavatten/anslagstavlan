@@ -35,6 +35,22 @@ app.get('/api/stats', (req, res) => {
   res.json(stats);
 });
 
+// API endpoint to verify PIN for a room
+app.post('/api/verify-pin', express.json(), (req, res) => {
+  const { roomId, pin } = req.body;
+  const room = rooms.get(roomId);
+
+  if (!room) {
+    return res.json({ success: false, error: 'Tavlan finns inte' });
+  }
+
+  if (room.pin !== pin) {
+    return res.json({ success: false, error: 'Fel PIN' });
+  }
+
+  res.json({ success: true });
+});
+
 // Serve index.html on all routes (for SPA)
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
@@ -61,11 +77,13 @@ io.on('connection', (socket) => {
 
     // Initialize room if it doesn't exist
     if (!rooms.has(roomId)) {
+      const pin = Math.floor(1000 + Math.random() * 9000).toString();
       rooms.set(roomId, {
         messages: [],
         userCount: 0,
         cleanupTimer: null,
-        title: 'Flyktig tavla'
+        title: 'Flyktig tavla',
+        pin: pin
       });
     }
 
@@ -82,7 +100,8 @@ io.on('connection', (socket) => {
     socket.emit('room-state', {
       messages: room.messages,
       userCount: room.userCount,
-      title: room.title
+      title: room.title,
+      pin: room.pin
     });
 
     // Notify others in room that user count changed
