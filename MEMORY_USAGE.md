@@ -106,6 +106,26 @@ En analys av minnesanvändning per tavla, meddelande och användare.
 | 500 | 25000 | 1500 | **~4 GB** |
 | 1000 | 50000 | 3000 | **~8 GB** |
 
+### Scenario D: Bildheavy (5 bilder á 5 MB per tavla)
+
+**Antaganden**:
+- 5 bilder per tavla (5 MB vardera = 25 MB original)
+- Base64-overhead: ×1.33 = **33.25 MB per tavla**
+- Inga textmeddelanden (eller minimal)
+
+| Tavlor | Bilder | Total Bildstorlek | RAM-användning |
+|---|---|---|---|
+| 1 | 5 | 25 MB | **~33.25 MB** |
+| 5 | 25 | 125 MB | **~166.25 MB** |
+| 10 | 50 | 250 MB | **~332.5 MB** |
+| 25 | 125 | 625 MB | **~831 MB** |
+| 50 | 250 | 1.25 GB | **~1.66 GB** |
+| 100 | 500 | 2.5 GB | **~3.32 GB** |
+| 200 | 1000 | 5 GB | **~6.65 GB** |
+| 500 | 2500 | 12.5 GB | **~16.6 GB** |
+
+**Notera**: Denna typ av användning skalerar **snabbt**. Redan vid 50 tavlor är du på ~1.7 GB RAM. Vid 200 tavlor behöver du 6.65 GB, vilket är en dedikerad server.
+
 ---
 
 ## Socket.io/Node.js Overhead
@@ -137,6 +157,7 @@ En analys av minnesanvändning per tavla, meddelande och användare.
 | Setup | RAM-krav | Status |
 |-------|----------|--------|
 | Högaktiv server (200 tavlor med filer) | ~2-4 GB | ⚠️ Övervakning rekommenderas |
+| Bildheavy (100 tavlor, 5 bilder à 5 MB vardera) | ~3.32 GB | ⚠️ Dedikerad server |
 | Många stora filer (500 tavlor, 5 filer à 10 MB) | ~7-10 GB | ⚠️ Kräver dedikerad server |
 
 ### ❌ Inte lämpligt
@@ -167,7 +188,13 @@ En analys av minnesanvändning per tavla, meddelande och användare.
 | **Per tom tavla** | ~350 bytes |
 | **Per textmeddelande** | ~420 bytes |
 | **Per användar-session** | ~30-60 KB |
-| **Praktisk gräns (1 server)** | ~4-5 GB = ~1000 aktiva tavlor |
-| **Rekommenderad gräns** | ~2 GB = ~500 aktiva tavlor |
+| **Per bildtung tavla** (5×5 MB bilder) | ~33.25 MB |
+| **Praktisk gräns (1 server, text-bara)** | ~4-5 GB = ~1000 aktiva tavlor |
+| **Praktisk gräns (1 server, bildtunga)** | ~3-4 GB = ~100 aktiva tavlor |
+| **Rekommenderad gräns (text-bara)** | ~2 GB = ~500 aktiva tavlor |
+| **Rekommenderad gräns (bildtunga)** | ~2 GB = ~60 aktiva tavlor |
 
-**Slutsats**: Perfekt för klassrum, workshops, möten. **Inte** för persistent SaaS eller massiva simultana användare. För större skala: lägg till databas (PostgreSQL), cache (Redis), och fillagring (S3).
+**Slutsats**: 
+- **Text-bara**: Perfekt för klassrum, workshops, möten. Skalas väl till ~500 tavlor.
+- **Bildtunga**: Mycket RAM-krävande. Redan 50 tavlor = 1.7 GB. Kräver dedikerad server eller extern fillagring.
+- **Production SaaS**: För båda typerna behöver du databas (PostgreSQL), cache (Redis), och fillagring (S3).
