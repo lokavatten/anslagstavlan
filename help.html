@@ -70,6 +70,37 @@
     </div>
 </header>
 
+<!-- MOBILE TABLE OF CONTENTS (visible on all screens, hidden on lg where sidebar takes over) -->
+<div class="lg:hidden max-w-5xl mx-auto px-4 pt-8">
+    <details class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+        <summary class="flex items-center justify-between px-5 py-4 cursor-pointer font-semibold text-slate-700 list-none select-none">
+            <span class="flex items-center gap-2">
+                <i data-lucide="list" class="w-4 h-4 text-indigo-500"></i>
+                Innehållsförteckning
+            </span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400"></i>
+        </summary>
+        <nav class="px-5 pb-4 pt-1 grid sm:grid-cols-2 gap-x-6 gap-y-1 text-sm text-slate-500 border-t border-slate-100">
+            <a href="#intro" class="toc-link py-1">Vad är Flyktig Tavla?</a>
+            <a href="#skapa" class="toc-link py-1">Skapa &amp; dela en tavla</a>
+            <a href="#anteckningar" class="toc-link py-1">Skriva anteckningar</a>
+            <a href="#redigera" class="toc-link py-1">Redigera anteckningar</a>
+            <a href="#ta-bort" class="toc-link py-1">Ta bort anteckningar</a>
+            <a href="#kopiera" class="toc-link py-1">Kopiera text</a>
+            <a href="#lang-text" class="toc-link py-1">Läsa lång text</a>
+            <a href="#filer" class="toc-link py-1">Ladda upp filer</a>
+            <a href="#bilder" class="toc-link py-1">Förhandsgranska bilder</a>
+            <a href="#bildstorlek" class="toc-link py-1">Bildstorlek &amp; visningsläge</a>
+            <a href="#titel" class="toc-link py-1">Ändra tavlans titel</a>
+            <a href="#rensa" class="toc-link py-1">Rensa tavlan</a>
+            <a href="#dela" class="toc-link py-1">Dela tavlan (QR &amp; PIN)</a>
+            <a href="#statistik" class="toc-link py-1">Statistiksidan</a>
+            <a href="#tangentbord" class="toc-link py-1">Tangentbordsgenvägar</a>
+            <a href="#livslangd" class="toc-link py-1">Hur länge finns tavlan kvar?</a>
+        </nav>
+    </details>
+</div>
+
 <div class="max-w-5xl mx-auto px-4 py-10 flex gap-10">
 
     <!-- SIDEBAR: TABLE OF CONTENTS -->
