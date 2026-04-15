@@ -262,6 +262,8 @@
             const [copiedMessageId, setCopiedMessageId] = useState(null); // For text copy feedback
             const [showVersion, setShowVersion] = useState(false);
             const [previewImage, setPreviewImage] = useState(null); // { src, name } when lightbox is open
+            // First-visit welcome modal: shown once per device, using localStorage as the flag.
+            const [showWelcome, setShowWelcome] = useState(() => !localStorage.getItem('flyktig_welcomed'));
 
             // === MESSAGE EDITING STATE ===
             const [editingId, setEditingId] = useState(null);
@@ -458,6 +460,7 @@
                         setShowShareModal(false);
                         setPinModal(null);
                         setPreviewImage(null);
+                        dismissWelcome();
                     }
 
                     // 'f' opens a lightbox for whichever image the mouse is hovering over.
@@ -641,6 +644,11 @@
                     setCopiedMessageId(true); // Brief visual feedback
                     setTimeout(() => setCopiedMessageId(null), 1500);
                 });
+            };
+
+            const dismissWelcome = () => {
+                localStorage.setItem('flyktig_welcomed', '1');
+                setShowWelcome(false);
             };
 
             const copyToClipboard = () => {
@@ -1004,6 +1012,70 @@
                                     <p className="text-slate-800 whitespace-pre-wrap leading-relaxed">
                                         {messages.find(m => m.id === expandedMessageId)?.text}
                                     </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* First-visit Welcome Modal */}
+                    {showWelcome && (
+                        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-md">
+                            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden relative animate-in">
+                                <button onClick={dismissWelcome} className="absolute top-3 right-3 p-1.5 text-slate-400 hover:text-slate-600 z-10">
+                                    <Icon name="x" size={18} />
+                                </button>
+
+                                {/* Header */}
+                                <div className="bg-indigo-600 px-6 pt-6 pb-5 text-white">
+                                    <div className="text-2xl mb-1">👋</div>
+                                    <h2 className="text-lg font-bold">Välkommen till Flyktig Tavla!</h2>
+                                    <p className="text-indigo-200 text-xs mt-1">En gemensam whiteboard — dela text och filer i realtid.</p>
+                                </div>
+
+                                {/* Features */}
+                                <div className="px-6 py-4 space-y-3">
+                                    <div className="flex items-start gap-3">
+                                        <span className="text-lg shrink-0">✏️</span>
+                                        <div>
+                                            <p className="text-sm font-semibold text-slate-800">Skriv anteckningar</p>
+                                            <p className="text-xs text-slate-500">Skriv i fältet längst ner och tryck Enter. Alla ser det direkt.</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <span className="text-lg shrink-0">📎</span>
+                                        <div>
+                                            <p className="text-sm font-semibold text-slate-800">Dela filer och bilder</p>
+                                            <p className="text-xs text-slate-500">Klicka på gem-ikonen i textfältet för att bifoga en fil upp till 10 MB.</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <span className="text-lg shrink-0">🔗</span>
+                                        <div>
+                                            <p className="text-sm font-semibold text-slate-800">Bjud in andra</p>
+                                            <p className="text-xs text-slate-500">Klicka på <strong>Dela</strong>-knappen (↗) för att kopiera länken eller visa QR-koden.</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <span className="text-lg shrink-0">⏱️</span>
+                                        <div>
+                                            <p className="text-sm font-semibold text-slate-800">Tillfällig tavla</p>
+                                            <p className="text-xs text-slate-500">Allt sparas i 3 timmar efter att alla lämnat — inget lagras permanent.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Footer */}
+                                <div className="px-6 pb-5 flex items-center justify-between gap-3">
+                                    <a href="/help" target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-600 hover:underline flex items-center gap-1">
+                                        <Icon name="book-open" size={12} />
+                                        Läs hela manualen
+                                    </a>
+                                    <button
+                                        onClick={dismissWelcome}
+                                        className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-5 py-2 rounded-xl transition-all active:scale-95"
+                                    >
+                                        Kom igång →
+                                    </button>
                                 </div>
                             </div>
                         </div>
