@@ -269,6 +269,8 @@
             const [editingId, setEditingId] = useState(null);
             const [editText, setEditText] = useState('');
             const [expandedMessageId, setExpandedMessageId] = useState(null);
+            const [editingLabelId, setEditingLabelId] = useState(null);
+            const [editLabelText, setEditLabelText] = useState('');
 
             // === IMAGE & DISPLAY STATE ===
             const [imageSize, setImageSize] = useState('full'); // 'full', 'half', 'small'
@@ -417,6 +419,10 @@
 
                 socket.on('edit-message', ({ id, text }) => {
                     setMessages(prev => prev.map(m => m.id === id ? { ...m, text } : m));
+                });
+
+                socket.on('edit-label', ({ id, label }) => {
+                    setMessages(prev => prev.map(m => m.id === id ? { ...m, label } : m));
                 });
 
                 socket.on('board-title-change', (newTitle) => {
@@ -646,6 +652,15 @@
                 });
             };
 
+            const saveLabel = (id) => {
+                const label = editLabelText.trim() || 'Inlägg';
+                setMessages(prev => prev.map(m => m.id === id ? { ...m, label } : m));
+                setEditingLabelId(null);
+                if (socketRef.current) {
+                    socketRef.current.emit('edit-label', { id, label });
+                }
+            };
+
             const dismissWelcome = () => {
                 localStorage.setItem('flyktig_welcomed', '1');
                 setShowWelcome(false);
@@ -775,7 +790,28 @@
                                         <div className="w-5 sm:w-6 h-5 sm:h-6 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
                                             <Icon name="user" size={10} className="text-indigo-600 sm:w-3 sm:h-3" />
                                         </div>
-                                        <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-tighter">Inlägg</span>
+                                        {editingLabelId === msg.id ? (
+                                            <input
+                                                autoFocus
+                                                value={editLabelText}
+                                                onChange={(e) => setEditLabelText(e.target.value)}
+                                                onBlur={() => saveLabel(msg.id)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') saveLabel(msg.id);
+                                                    if (e.key === 'Escape') setEditingLabelId(null);
+                                                }}
+                                                className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-tighter bg-slate-100 border border-indigo-300 rounded px-1 outline-none w-20"
+                                                maxLength={20}
+                                            />
+                                        ) : (
+                                            <span
+                                                className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-tighter cursor-pointer hover:text-indigo-400 transition-colors"
+                                                title="Klicka för att byta etikett"
+                                                onClick={() => { setEditingLabelId(msg.id); setEditLabelText(msg.label || 'Inlägg'); }}
+                                            >
+                                                {msg.label || 'Inlägg'}
+                                            </span>
+                                        )}
                                     </div>
                                     {msg.text !== undefined && (
                                         editingId === msg.id ? (

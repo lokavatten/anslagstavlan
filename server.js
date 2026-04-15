@@ -238,6 +238,23 @@ io.on('connection', (socket) => {
   });
 
   /**
+   * edit-label event
+   * Update the label of an existing message. Broadcast change to all.
+   */
+  socket.on('edit-label', ({ id, label }) => {
+    if (!currentRoom) return;
+
+    const room = rooms.get(currentRoom);
+    if (!room) return;
+
+    const msg = room.messages.find(m => m.id === id);
+    if (msg) {
+      msg.label = label;
+      io.to(currentRoom).emit('edit-label', { id, label });
+    }
+  });
+
+  /**
    * board-title-change event
    * Update the room's display title. Broadcast to all.
    */
