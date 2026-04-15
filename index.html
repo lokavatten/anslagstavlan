@@ -990,13 +990,17 @@
                                             Hjälp
                                         </a>
                                     </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowVersion(!showVersion)}
-                                        className="hover:text-slate-500 transition-colors cursor-pointer"
-                                    >
-                                        v{version}
-                                    </button>
+                                    <div className="flex items-center gap-2">
+                                        <span>© Joakim Enerstam</span>
+                                        <span className="text-slate-300">·</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowVersion(!showVersion)}
+                                            className="hover:text-slate-500 transition-colors cursor-pointer"
+                                        >
+                                            v{version}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </form>
