@@ -259,7 +259,9 @@
             // === UI/MODAL STATE ===
             const [showShareModal, setShowShareModal] = useState(false);
             const [copied, setCopied] = useState(false);
+            const [copiedMessageId, setCopiedMessageId] = useState(null); // For text copy feedback
             const [showVersion, setShowVersion] = useState(false);
+            const [previewImage, setPreviewImage] = useState(null); // { src, name } when lightbox is open
 
             // === MESSAGE EDITING STATE ===
             const [editingId, setEditingId] = useState(null);
@@ -292,6 +294,8 @@
             const socketRef = useRef(null); // Socket.io client instance
             const messagesEndRef = useRef(null); // Sentinel for scrollIntoView
             const titleInputRef = useRef(null); // For auto-focus on title edit
+            const hoveredImageRef = useRef(null); // Tracks which image msg.id the mouse is currently over
+            const previewImgRef = useRef(null); // The <img> element in the lightbox, for requestFullscreen()
 
             const version = '1.1.0';
 
@@ -445,16 +449,31 @@
             }, [boardTitle]);
 
             useEffect(() => {
-                const handleEscapeKey = (e) => {
+                const handleKeyDown = (e) => {
+                    // Skip when typing in an input or textarea
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
                     if (e.key === 'Escape') {
                         setExpandedMessageId(null);
                         setShowShareModal(false);
                         setPinModal(null);
+                        setPreviewImage(null);
+                    }
+
+                    // 'f' opens a lightbox for whichever image the mouse is hovering over.
+                    // If a lightbox is already open, 'f' instead triggers browser fullscreen.
+                    if (e.key === 'f' || e.key === 'F') {
+                        if (previewImgRef.current?.src) {
+                            previewImgRef.current.requestFullscreen?.();
+                        } else if (hoveredImageRef.current) {
+                            const { src, name } = hoveredImageRef.current;
+                            setPreviewImage({ src, name });
+                        }
                     }
                 };
 
-                window.addEventListener('keydown', handleEscapeKey);
-                return () => window.removeEventListener('keydown', handleEscapeKey);
+                window.addEventListener('keydown', handleKeyDown);
+                return () => window.removeEventListener('keydown', handleKeyDown);
             }, []);
 
             useEffect(() => {
@@ -617,6 +636,13 @@
                 }
             };
 
+            const copyMessageText = (text) => {
+                navigator.clipboard.writeText(text).then(() => {
+                    setCopiedMessageId(true); // Brief visual feedback
+                    setTimeout(() => setCopiedMessageId(null), 1500);
+                });
+            };
+
             const copyToClipboard = () => {
                 const url = window.location.href;
                 navigator.clipboard.writeText(url).then(() => {
@@ -725,6 +751,11 @@
                             {messages.map((msg) => (
                                 <div key={msg.id} className="p-3 sm:p-4 rounded-xl sm:rounded-2xl shadow-sm border border-slate-200 bg-white animate-in relative group">
                                     <div className="absolute top-2 right-2 sm:top-3 sm:right-3 flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all">
+                                        {msg.text && (
+                                            <button onClick={() => copyMessageText(msg.text)} className="p-1 text-slate-300 hover:text-green-500 hover:bg-green-50 rounded-md transition-all" title="Kopiera text">
+                                                <Icon name={copiedMessageId ? "check" : "copy"} size={14} className="sm:w-4 sm:h-4" style={{color: copiedMessageId ? '#10b981' : 'inherit'}} />
+                                            </button>
+                                        )}
                                         <button onClick={() => { setEditingId(msg.id); setEditText(msg.text); }} className="p-1 text-slate-300 hover:text-indigo-500 hover:bg-indigo-50 rounded-md transition-all">
                                             <Icon name="edit-2" size={14} className="sm:w-4 sm:h-4" />
                                         </button>
@@ -783,37 +814,56 @@
                                     {msg.file && (
                                         <div className="bg-blue-50 border border-blue-200 rounded-md overflow-hidden">
                                             {msg.file.isImage ? (
-                                                <div className="flex flex-col">
-                                                    <img src={msg.file.data} alt={msg.file.name} style={{...getImageSizeStyle(), objectFit: 'cover'}} className="w-full" />
+                                                <div className="flex flex-col"
+                                                    onMouseEnter={() => { hoveredImageRef.current = { src: msg.file.data, name: msg.file.name }; }}
+                                                    onMouseLeave={() => { hoveredImageRef.current = null; }}
+                                                >
+                                                    <div className="relative cursor-zoom-in" onClick={() => setPreviewImage({ src: msg.file.data, name: msg.file.name })}>
+                                                        <img src={msg.file.data} alt={msg.file.name} style={{...getImageSizeStyle(), objectFit: 'cover'}} className="w-full" />
+                                                        <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
+                                                            <span className="opacity-0 hover:opacity-100 transition-opacity bg-black/50 text-white text-[10px] px-2 py-0.5 rounded">
+                                                                klicka eller tryck F
+                                                            </span>
+                                                        </div>
+                                                    </div>
                                                     <div className="flex items-center justify-between gap-1.5 px-2 py-1.5">
                                                         <div className="flex flex-col overflow-hidden min-w-0">
                                                             <span className="text-xs font-bold truncate text-slate-700">{msg.file.name}</span>
                                                             <span className="text-[8px] text-slate-400">{msg.file.size}</span>
                                                         </div>
-                                                        {msg.file.data && (
+                                                        <div className="flex gap-1">
                                                             <button
-                                                                onClick={async () => {
-                                                                    try {
-                                                                        const response = await fetch(msg.file.data);
-                                                                        const blob = await response.blob();
-                                                                        const url = URL.createObjectURL(blob);
-                                                                        const link = document.createElement('a');
-                                                                        link.href = url;
-                                                                        link.download = msg.file.name;
-                                                                        document.body.appendChild(link);
-                                                                        link.click();
-                                                                        document.body.removeChild(link);
-                                                                        URL.revokeObjectURL(url);
-                                                                    } catch (error) {
-                                                                        console.error('Download failed:', error);
-                                                                        alert('Nedladdning misslyckades');
-                                                                    }
-                                                                }}
+                                                                onClick={() => setPreviewImage({ src: msg.file.data, name: msg.file.name })}
                                                                 className="p-1 hover:bg-blue-100 text-blue-600 rounded shrink-0"
+                                                                title="Förhandsgranska (F)"
                                                             >
-                                                                <Icon name="download" size={14} />
+                                                                <Icon name="maximize-2" size={14} />
                                                             </button>
-                                                        )}
+                                                            {msg.file.data && (
+                                                                <button
+                                                                    onClick={async () => {
+                                                                        try {
+                                                                            const response = await fetch(msg.file.data);
+                                                                            const blob = await response.blob();
+                                                                            const url = URL.createObjectURL(blob);
+                                                                            const link = document.createElement('a');
+                                                                            link.href = url;
+                                                                            link.download = msg.file.name;
+                                                                            document.body.appendChild(link);
+                                                                            link.click();
+                                                                            document.body.removeChild(link);
+                                                                            URL.revokeObjectURL(url);
+                                                                        } catch (error) {
+                                                                            console.error('Download failed:', error);
+                                                                            alert('Nedladdning misslyckades');
+                                                                        }
+                                                                    }}
+                                                                    className="p-1 hover:bg-blue-100 text-blue-600 rounded shrink-0"
+                                                                >
+                                                                    <Icon name="download" size={14} />
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ) : (
@@ -912,16 +962,26 @@
                                     </button>
                                 </div>
                                 <div className="flex items-center justify-between text-[10px] text-slate-400 px-1">
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            window.history.pushState({}, '', '/stats');
-                                            setCurrentPage('stats');
-                                        }}
-                                        className="hover:text-indigo-500 transition-colors cursor-pointer"
-                                    >
-                                        Statistik
-                                    </button>
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                window.history.pushState({}, '', '/stats');
+                                                setCurrentPage('stats');
+                                            }}
+                                            className="hover:text-indigo-500 transition-colors cursor-pointer"
+                                        >
+                                            Statistik
+                                        </button>
+                                        <a
+                                            href="/help"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="hover:text-indigo-500 transition-colors cursor-pointer"
+                                        >
+                                            Hjälp
+                                        </a>
+                                    </div>
                                     <button
                                         type="button"
                                         onClick={() => setShowVersion(!showVersion)}
@@ -946,6 +1006,30 @@
                                     </p>
                                 </div>
                             </div>
+                        </div>
+                    )}
+
+                    {/* Image Lightbox */}
+                    {previewImage && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90" onClick={() => setPreviewImage(null)}>
+                            <button onClick={() => setPreviewImage(null)} className="absolute top-4 right-4 p-2 text-white/70 hover:text-white z-10">
+                                <Icon name="x" size={24} />
+                            </button>
+                            <button
+                                onClick={(e) => { e.stopPropagation(); previewImgRef.current?.requestFullscreen?.(); }}
+                                className="absolute top-4 right-14 p-2 text-white/70 hover:text-white z-10"
+                                title="Helskärm"
+                            >
+                                <Icon name="maximize" size={24} />
+                            </button>
+                            <img
+                                ref={previewImgRef}
+                                src={previewImage.src}
+                                alt={previewImage.name}
+                                className="max-w-[95vw] max-h-[95vh] object-contain rounded shadow-2xl"
+                                onClick={(e) => e.stopPropagation()}
+                            />
+                            <p className="absolute bottom-4 text-white/50 text-xs">{previewImage.name} &nbsp;·&nbsp; Esc för att stänga &nbsp;·&nbsp; F för helskärm</p>
                         </div>
                     )}
 

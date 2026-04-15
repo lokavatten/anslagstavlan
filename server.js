@@ -75,6 +75,10 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+app.get('/help', (req, res) => {
+  res.sendFile(path.join(__dirname, 'help.html'));
+});
+
 app.get('/*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -268,12 +272,13 @@ io.on('connection', (socket) => {
     io.to(currentRoom).emit('user-count', room.userCount);
 
     // Schedule cleanup if room is now empty.
-    // Grace period: 30 seconds. If anyone rejoins before timer fires, cleanup is cancelled.
+    // Grace period: 3 hours. Allows users to return after a lunch break or short pause,
+    // as long as they remember the URL. If anyone rejoins before timer fires, cleanup is cancelled.
     if (room.userCount === 0) {
       room.cleanupTimer = setTimeout(() => {
         rooms.delete(currentRoom);
         console.log('Room cleaned up after grace period:', currentRoom);
-      }, 30000);
+      }, 3 * 60 * 60 * 1000); // 3 hours
     }
   });
 });

@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hjälp – Flyktig Tavla</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+        .toc-link { transition: all 0.15s; }
+        .toc-link:hover { color: #4f46e5; padding-left: 6px; }
+        .section { scroll-margin-top: 80px; }
+        .kbd {
+            display: inline-block;
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-bottom-width: 2px;
+            border-radius: 5px;
+            padding: 1px 8px;
+            font-size: 0.8em;
+            font-family: monospace;
+            color: #334155;
+        }
+        .tip {
+            background: #eef2ff;
+            border-left: 3px solid #4f46e5;
+            border-radius: 0 8px 8px 0;
+            padding: 10px 16px;
+            margin: 12px 0;
+            font-size: 0.92em;
+            color: #3730a3;
+        }
+        .step-num {
+            width: 28px;
+            height: 28px;
+            background: #4f46e5;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        h2 { scroll-margin-top: 80px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+<!-- STICKY HEADER -->
+<header class="sticky top-0 z-40 bg-white border-b border-slate-200 shadow-sm">
+    <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="bg-indigo-600 p-1.5 rounded-lg">
+                <i data-lucide="layout-dashboard" class="text-white w-5 h-5"></i>
+            </div>
+            <div>
+                <span class="font-bold text-slate-900">Flyktig Tavla</span>
+                <span class="text-slate-400 mx-2">·</span>
+                <span class="text-slate-500 text-sm">Användarmanual</span>
+            </div>
+        </div>
+        <a href="/" class="text-sm text-indigo-600 hover:text-indigo-800 flex items-center gap-1 font-medium">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Tillbaka till tavlan
+        </a>
+    </div>
+</header>
+
+<div class="max-w-5xl mx-auto px-4 py-10 flex gap-10">
+
+    <!-- SIDEBAR: TABLE OF CONTENTS -->
+    <aside class="hidden lg:block w-64 shrink-0">
+        <nav class="sticky top-24">
+            <p class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">Innehåll</p>
+            <ul class="space-y-1 text-sm text-slate-500">
+                <li><a href="#intro" class="toc-link block py-1">Vad är Flyktig Tavla?</a></li>
+                <li><a href="#skapa" class="toc-link block py-1">Skapa &amp; dela en tavla</a></li>
+                <li><a href="#anteckningar" class="toc-link block py-1">Skriva anteckningar</a></li>
+                <li><a href="#redigera" class="toc-link block py-1">Redigera anteckningar</a></li>
+                <li><a href="#ta-bort" class="toc-link block py-1">Ta bort anteckningar</a></li>
+                <li><a href="#kopiera" class="toc-link block py-1">Kopiera text</a></li>
+                <li><a href="#lang-text" class="toc-link block py-1">Läsa lång text</a></li>
+                <li><a href="#filer" class="toc-link block py-1">Ladda upp filer</a></li>
+                <li><a href="#bilder" class="toc-link block py-1">Förhandsgranska bilder</a></li>
+                <li><a href="#bildstorlek" class="toc-link block py-1">Bildstorlek &amp; visningsläge</a></li>
+                <li><a href="#titel" class="toc-link block py-1">Ändra tavlans titel</a></li>
+                <li><a href="#rensa" class="toc-link block py-1">Rensa tavlan</a></li>
+                <li><a href="#dela" class="toc-link block py-1">Dela tavlan (QR &amp; PIN)</a></li>
+                <li><a href="#statistik" class="toc-link block py-1">Statistiksidan</a></li>
+                <li><a href="#tangentbord" class="toc-link block py-1">Tangentbordsgenvägar</a></li>
+                <li><a href="#livslangd" class="toc-link block py-1">Hur länge finns tavlan kvar?</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 min-w-0 space-y-16">
+
+        <!-- INTRO -->
+        <section id="intro" class="section">
+            <div class="bg-indigo-600 rounded-2xl p-8 text-white mb-8">
+                <h1 class="text-3xl font-extrabold mb-3">Välkommen till Flyktig Tavla 👋</h1>
+                <p class="text-indigo-100 text-lg leading-relaxed">
+                    En digital whiteboard för snabb och enkel samarbete i realtid — utan konton, utan lagring, utan krångel.
+                    Dela länken, skriv ihop, lämna. Det finns inget mer.
+                </p>
+            </div>
+            <div class="grid sm:grid-cols-3 gap-4">
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div class="text-2xl mb-2">⚡</div>
+                    <h3 class="font-bold mb-1">Realtid</h3>
+                    <p class="text-sm text-slate-500">Alla ser varandras anteckningar direkt — ingen sidladdning behövs.</p>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div class="text-2xl mb-2">🔒</div>
+                    <h3 class="font-bold mb-1">Ingen lagring</h3>
+                    <p class="text-sm text-slate-500">Inget sparas på disk. Allt försvinner automatiskt när tavlan töms.</p>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div class="text-2xl mb-2">📎</div>
+                    <h3 class="font-bold mb-1">Filer &amp; bilder</h3>
+                    <p class="text-sm text-slate-500">Dela bilder och filer upp till 10 MB direkt i flödet.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SKAPA TAVLA -->
+        <section id="skapa" class="section">
+            <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+                <i data-lucide="link" class="w-6 h-6 text-indigo-500"></i>
+                Skapa &amp; dela en tavla
+            </h2>
+            <p class="text-slate-600 mb-6">Varje tavla har en unik länk. Så länge du (och dina kollegor) har länken kan ni komma åt samma tavla.</p>
+
+            <div class="space-y-4">
+                <div class="flex gap-4 items-start bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div class="step-num">1</div>
+                    <div>
+                        <p class="font-semibold">Öppna appen</p>
+                        <p class="text-sm text-slate-500 mt-1">Gå till appens adress. En ny tavla skapas automatiskt med en unik URL-kod, t.ex. <code class="bg-slate-100 px-1 rounded">/#ab3f2c</code>.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 items-start bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div class="step-num">2</div>
+                    <div>
+                        <p class="font-semibold">Dela länken</p>
+                        <p class="text-sm text-slate-500 mt-1">Klicka på <strong>Dela</strong>-knappen (pilen uppe till höger). Du ser en QR-kod och en knapp för att kopiera länken.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 items-start bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div class="step-num">3</div>
+                    <div>
+                        <p class="font-semibold">Bjud in kollegor</p>
+                        <p class="text-sm text-slate-500 mt-1">Skicka länken via chatt, mejl, eller låt dem skanna QR-koden med kameran. De hamnar direkt på samma tavla.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tip mt-6">
+                💡 <strong>Tips:</strong> Vill du ha en tom tavla med en viss kod? Skriv valfritt ID i URL:en, t.ex. <code>/#mitt-mote</code>.
+            </div>
+        </section>
+
+        <!-- ANTECKNINGAR -->
+        <section id="anteckningar" class="section">
+            <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+                <i data-lucide="pen-line" class="w-6 h-6 text-indigo-500"></i>
+                Skriva anteckningar
+            </h2>
+            <p class="text-slate-600 mb-6">Det textruta längst ner på skärmen är ditt skrivfält. Allt du skriver syns för alla på tavlan direkt.</p>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-6 shadow-sm space-y-4">
+                <div class="flex items-start gap-3">
+                    <span class="text-2xl">✏️</span>
+                    <div>
+                        <p class="font-semibold">Skriv din text</p>
+                        <p class="text-sm text-slate-500">Klicka i textfältet och börja skriva. Tryck <kbd class="kbd">Enter</kbd> för att skicka, eller <kbd class="kbd">Shift</kbd>+<kbd class="kbd">Enter</kbd> för radbrytning.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-3">
+                    <span class="text-2xl">📤</span>
+                    <div>
+                        <p class="font-semibold">Skicka</p>
+                        <p class="text-sm text-slate-500">Klicka på skicka-knappen (pil-ikonen) eller tryck <kbd class="kbd">Enter</kbd>. Anteckningen dyker upp på tavlan för alla.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- REDIGERA -->
+        <section id="redigera" class="section">
+            <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+                <i data-lucide="edit-2" class="w-6 h-6 text-indigo-500"></i>
+                Redigera anteckningar
+            </h2>
+            <p class="text-slate-600 mb-6">Du kan när som helst ändra texten i en anteckning som redan finns på tavlan.</p>
+
+            <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <div class="p-5 border-b border-slate-100">
+                    <p class="font-semibold mb-1">Sätt 1 — Klicka direkt på texten</p>
+                    <p class="text-sm text-slate-500">Klicka på texten i anteckningen. Den förvandlas till ett redigerbart textfält.</p>
+                </div>
+                <div class="p-5 border-b border-slate-100">
+                    <p class="font-semibold mb-1">Sätt 2 — Redigera-knappen</p>
+                    <p class="text-sm text-slate-500">Håll muspekaren över anteckningen. En penn-ikon (<i data-lucide="edit-2" class="w-3.5 h-3.5 inline text-slate-500"></i>) dyker upp i övre högra hörnet. Klicka på den.</p>
+                </div>
+                <div class="p-5">
+                    <p class="font-semibold mb-1">Spara ändringen</p>
+                    <p class="text-sm text-slate-500">Tryck <kbd class="kbd">Enter</kbd> eller klicka utanför fältet. Tryck <kbd class="kbd">Esc</kbd> för att avbryta utan att spara.</p>
+                </div>
+            </div>
+
+            <div class="tip">
+                💡 Ändringar syns omedelbart för alla på tavlan.
+            </div>
+        </section>
+
+        <!-- TA BORT -->
+        <section id="ta-bort" class="section">
+            <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+                <i data-lucide="x" class="w-6 h-6 text-indigo-500"></i>
+                Ta bort anteckningar
+            </h2>
+            <p class="text-slate-600 mb-6">Enskilda anteckningar kan raderas av vem som helst på tavlan.</p>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm space-y-3">
+                <p class="text-sm text-slate-600">Håll muspekaren över anteckningen. En <strong>✕-knapp</strong> dyker upp i övre högra hörnet.</p>
+                <p class="text-sm text-slate-600">Klicka på den för att ta bort anteckningen. Det går inte att ångra — anteckningen försvinner för alla.</p>
+                <p class="text-sm font-medium text-red-500 flex items-center gap-1">
+                    <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                    Borttagning är permanent och syns direkt för alla användare.
+                </p>
+            </div>
+        </section>
+
+        <!-- KOPIERA -->
+        <section id="kopiera" class="section">
+            <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+                <i data-lucide="copy" class="w-6 h-6 text-indigo-500"></i>
+                Kopiera text
+            </h2>
+            <p class="text-slate-600 mb-6">Du kan snabbt kopiera hela texten i en anteckning till urklipp.</p>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <p class="text-sm text-slate-600 mb-3">Håll muspekaren över en anteckning med text. En <strong>kopiera-ikon</strong> (<i data-lucide="copy" class="w-3.5 h-3.5 inline text-slate-500"></i>) dyker upp bredvid redigera- och radera-knapparna.</p>
+                <p class="text-sm text-slate-600">Klicka på den — texten kopieras och ikonen byter till en grön bock (<i data-lucide="check" class="w-3.5 h-3.5 inline text-green-500"></i>) som bekräftelse.</p>
+            </div>
+        </section>
+
+        <!-- LÅNG TEXT -->
+        <section id="lang-text" class="section">
+            <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+                <i data-lucide="expand" class="w-6 h-6 text-indigo-500"></i>
+                Läsa lång text
+            </h2>
+            <p class="text-slate-600 mb-6">Långa anteckningar visas trunkerade på tavlan för att spara plats. Du kan expandera dem för att läsa allt.</p>
+
+            <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <div class="p-5 border-b border-slate-100">
+                    <p class="font-semibold mb-1">Normal vy</p>
+                    <p class="text-sm text-slate-500">Anteckningar som är längre än 4 rader eller 200 tecken visas med en <strong>…</strong>-knapp i nedre hörnet. Klicka på den för att öppna texten i ett popup-fönster.</p>
+                </div>
+                <div class="p-5">
+                    <p class="font-semibold mb-1">Dynamiskt visningsläge</p>
+                    <p class="text-sm text-slate-500">I det dynamiska läget visas all text direkt i anteckningen med en scrollbar om den är väldigt lång. Byt läge via kugghjulsinställningarna. Se <a href="#bildstorlek" class="text-indigo-600 underline">Visningsläge</a>.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FILER -->
+        <section id="filer" class="section">
+            <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+                <i data-lucide="paperclip" class="w-6 h-6 text-indigo-500"></i>
+                Ladda upp filer
+            </h2>
+            <p class="text-slate-600 mb-6">Du kan bifoga en fil till varje anteckning — bilder visas som förhandsgranskning, övriga filer som en nedladdningsbar länk.</p>
+
+            <div class="space-y-4">
+                <div class="flex gap-4 items-start bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div class="step-num">1</div>
+                    <div>
+                        <p class="font-semibold">Klicka på gem-ikonen</p>
+                        <p class="text-sm text-slate-500 mt-1">Längst ner i textfältet finns en gem-ikon (<i data-lucide="paperclip" class="w-3.5 h-3.5 inline text-slate-500"></i>). Klicka på den för att öppna filväljaren.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 items-start bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div class="step-num">2</div>
+                    <div>
+                        <p class="font-semibold">Välj din fil</p>
+                        <p class="text-sm text-slate-500 mt-1">Alla filtyper accepteras. Maxstorlek är <strong>10 MB</strong>. Om filen är för stor visas ett felmeddelande direkt.</p>
+                    </div>
+                </div>
+                <div class="flex gap-4 items-start bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div class="step-num">3</div>
+                    <div>
+                        <p class="font-semibold">Skicka</p>
+                        <p class="text-sm text-slate-500 mt-1">Du kan skicka filen med eller utan text. Tryck Enter eller klicka på skicka-knappen. Filen är synlig för alla direkt.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mt-6 text-sm text-amber-800">
+                <strong>⚠️ Gräns:</strong> Max <strong>10 MB</strong> per fil. Filer lagras temporärt i serverns minne och försvinner när tavlan raderas.
+            </div>
+        </section>
+
+        <!-- BILDER -->
+        <section id="bilder" class="section">
+            <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+                <i data-lucide="image" class="w-6 h-6 text-indigo-500"></i>
+                Förhandsgranska bilder
+            </h2>
+            <p class="text-slate-600 mb-6">Bildbilagor visas direkt i anteckningen. Du kan öppna bilden i helskärm för att se alla detaljer.</p>
+
+            <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm mb-4">
+                <div class="p-5 border-b border-slate-100">
+                    <div class="flex items-center gap-2 mb-1">
+                        <i data-lucide="mouse-pointer-click" class="w-4 h-4 text-indigo-500"></i>
+                        <p class="font-semibold">Klicka på bilden</p>
+                    </div>
+                    <p class="text-sm text-slate-500">Klicka direkt på en bildförhandsvisning för att öppna den i en mörk lightbox i fullstorlek.</p>
+                </div>
+                <div class="p-5 border-b border-slate-100">
+                    <div class="flex items-center gap-2 mb-1">
+                        <i data-lucide="maximize-2" class="w-4 h-4 text-indigo-500"></i>
+                        <p class="font-semibold">Maximize-knappen</p>
+                    </div>
+                    <p class="text-sm text-slate-500">Under bilden finns en maximize-ikon bredvid nedladdningsknappen. Klicka på den för att öppna lightboxen.</p>
+                </div>
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-1">
+                        <kbd class="kbd">F</kbd>
+                        <p class="font-semibold">Tangentbordsgenväg</p>
+                    </div>
+                    <p class="text-sm text-slate-500">Håll muspekaren över en bild och tryck <kbd class="kbd">F</kbd> för att öppna lightboxen för just den bilden.</p>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <p class="font-semibold mb-3">I lightboxen:</p>
+                <ul class="space-y-2 text-sm text-slate-600">
+                    <li class="flex gap-2"><i data-lucide="maximize" class="w-4 h-4 text-indigo-400 mt-0.5 shrink-0"></i><span>Klicka på <strong>helskärmsikonen</strong> (övre högra hörnet) eller tryck <kbd class="kbd">F</kbd> igen för att ta bilden till webbläsarens helskärmsläge.</span></li>
+                    <li class="flex gap-2"><i data-lucide="x" class="w-4 h-4 text-slate-400 mt-0.5 shrink-0"></i><span>Klicka utanför bilden, på <strong>✕</strong>, eller tryck <kbd class="kbd">Esc</kbd> för att stänga.</span></li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- BILDSTORLEK -->
+        <section id="bildstorlek" class="section">
+            <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+                <i data-lucide="settings-2" class="w-6 h-6 text-indigo-500"></i>
+                Bildstorlek &amp; visningsläge
+            </h2>
+            <p class="text-slate-600 mb-6">Via inställnings-ikonen (kugghjulet) i headern kan du anpassa hur bilder och text visas på tavlan.</p>
+
+            <div class="space-y-4">
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <p class="font-semibold mb-3 flex items-center gap-2"><i data-lucide="image" class="w-4 h-4 text-indigo-500"></i> Bildstorlek</p>
+                    <div class="grid sm:grid-cols-3 gap-3 text-sm">
+                        <div class="bg-slate-50 rounded-lg p-3 text-center">
+                            <p class="font-bold mb-1">Stor</p>
+                            <p class="text-slate-500">Full bredd, hög bild. Bra för detaljgranskning.</p>
+                        </div>
+                        <div class="bg-slate-50 rounded-lg p-3 text-center">
+                            <p class="font-bold mb-1">Halv</p>
+                            <p class="text-slate-500">Mellannivå. Balans mellan plats och synlighet.</p>
+                        </div>
+                        <div class="bg-slate-50 rounded-lg p-3 text-center">
+                            <p class="font-bold mb-1">Liten</p>
+                            <p class="text-slate-500">Kompakt miniatyrbild. Bra vid många bilder.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <p class="font-semibold mb-3 flex items-center gap-2"><i data-lucide="align-left" class="w-4 h-4 text-indigo-500"></i> Visningsläge för text</p>
+                    <div class="grid sm:grid-cols-2 gap-3 text-sm">
+                        <div class="bg-slate-50 rounded-lg p-3">
+                            <p class="font-bold mb-1">Normal (standard)</p>
+                            <p class="text-slate-500">Lång text klipps av efter 4 rader. Klicka på <strong>…</strong> för att se hela texten i ett popup.</p>
+                        </div>
+                        <div class="bg-slate-50 rounded-lg p-3">
+                            <p class="font-bold mb-1">Dynamiskt</p>
+                            <p class="text-slate-500">All text visas direkt i anteckningen med scrollbar om den är väldigt lång.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- TITEL -->
+        <section id="titel" class="section">
+            <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+                <i data-lucide="type" class="w-6 h-6 text-indigo-500"></i>
+                Ändra tavlans titel
+            </h2>
+            <p class="text-slate-600 mb-6">Varje tavla har en titel som visas högst upp. Standard är <em>"Flyktig tavla"</em> men du kan byta den.</p>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <p class="text-sm text-slate-600 mb-3">Klicka direkt på titeln i headern — den förvandlas till ett redigerbart fält.</p>
+                <p class="text-sm text-slate-600">Tryck <kbd class="kbd">Enter</kbd> för att spara. Den nya titeln syns direkt för alla på tavlan.</p>
+            </div>
+
+            <div class="tip">
+                💡 Bra titel = lättare att identifiera rätt tavla på statistiksidan.
+            </div>
+        </section>
+
+        <!-- RENSA -->
+        <section id="rensa" class="section">
+            <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+                <i data-lucide="trash-2" class="w-6 h-6 text-indigo-500"></i>
+                Rensa tavlan
+            </h2>
+            <p class="text-slate-600 mb-6">Du kan radera alla anteckningar på en gång med rensa-funktionen.</p>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <p class="text-sm text-slate-600 mb-3">I headern finns en <strong>sopkorgsikon</strong>. Klicka på den för att rensa tavlan.</p>
+                <p class="text-sm text-slate-600">En bekräftelsedialog visas. Välj <em>Ja, rensa</em> för att ta bort alla anteckningar.</p>
+            </div>
+
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4 mt-4 text-sm text-red-700">
+                <strong>⚠️ Varning:</strong> Rensning är permanent och påverkar alla användare på tavlan. Det går inte att ångra.
+            </div>
+        </section>
+
+        <!-- DELA -->
+        <section id="dela" class="section">
+            <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+                <i data-lucide="share-2" class="w-6 h-6 text-indigo-500"></i>
+                Dela tavlan — QR-kod &amp; PIN
+            </h2>
+            <p class="text-slate-600 mb-6">Klicka på <strong>Dela</strong>-knappen (pil-ikonen uppe till höger) för att öppna delnings-modalen.</p>
+
+            <div class="grid sm:grid-cols-2 gap-4 mb-6">
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div class="text-2xl mb-2">🔗</div>
+                    <p class="font-semibold mb-1">Kopiera länk</p>
+                    <p class="text-sm text-slate-500">Klicka på <em>Kopiera Länk</em>-knappen. Klistra in länken i chatt, mejl eller SMS.</p>
+                </div>
+                <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div class="text-2xl mb-2">📱</div>
+                    <p class="font-semibold mb-1">QR-kod</p>
+                    <p class="text-sm text-slate-500">Skanna QR-koden med mobilkameran. Perfekt för fysiska möten där du vill att deltagare ska ansluta snabbt.</p>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                <div class="flex items-center gap-2 mb-2">
+                    <i data-lucide="shield" class="w-4 h-4 text-indigo-500"></i>
+                    <p class="font-semibold">PIN-kod</p>
+                </div>
+                <p class="text-sm text-slate-600 mb-2">Varje tavla har en automatiskt genererad <strong>4-siffrig PIN</strong>. Den visas i delnings-modalen.</p>
+                <p class="text-sm text-slate-600">PIN:en används när du navigerar till en tavla via <a href="#statistik" class="text-indigo-600 underline">statistiksidan</a> — du behöver ange rätt PIN för att komma in. Det skyddar mot att råka hamna på fel tavla.</p>
+            </div>
+        </section>
+
+        <!-- STATISTIK -->
+        <section id="statistik" class="section">
+            <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+                <i data-lucide="bar-chart-2" class="w-6 h-6 text-indigo-500"></i>
+                Statistiksidan
+            </h2>
+            <p class="text-slate-600 mb-6">Statistiksidan ger en överblick över alla aktiva tavlor på servern just nu.</p>
+
+            <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <div class="p-5 border-b border-slate-100">
+                    <p class="font-semibold mb-1">Öppna statistik</p>
+                    <p class="text-sm text-slate-500">Klicka på <em>Statistik</em>-länken längst ner i appen, eller gå direkt till <code class="bg-slate-100 px-1 rounded">/stats</code>.</p>
+                </div>
+                <div class="p-5 border-b border-slate-100">
+                    <p class="font-semibold mb-1">Vad visas?</p>
+                    <p class="text-sm text-slate-500">Antal aktiva tavlor, totalt antal anslutna användare, och en lista med alla tavlors titel, anteckningstid och användarantal. Uppdateras var 2:a sekund.</p>
+                </div>
+                <div class="p-5">
+                    <p class="font-semibold mb-1">Gå till en tavla från listan</p>
+                    <p class="text-sm text-slate-500">Klicka på en tavla i listan. Du ombeds ange tavlans PIN-kod för att bekräfta att du har tillgång. Ange rätt PIN → du ansluts till tavlan.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TANGENTBORD -->
+        <section id="tangentbord" class="section">
+            <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+                <i data-lucide="keyboard" class="w-6 h-6 text-indigo-500"></i>
+                Tangentbordsgenvägar
+            </h2>
+            <p class="text-slate-600 mb-6">Snabba upp ditt arbete med dessa tangentbordskommandon.</p>
+
+            <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="text-left p-4 font-semibold text-slate-600">Tangent</th>
+                            <th class="text-left p-4 font-semibold text-slate-600">Vad händer</th>
+                            <th class="text-left p-4 font-semibold text-slate-600">Kontext</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <tr>
+                            <td class="p-4"><kbd class="kbd">Enter</kbd></td>
+                            <td class="p-4 text-slate-600">Skickar anteckning</td>
+                            <td class="p-4 text-slate-500">När textfältet är i fokus</td>
+                        </tr>
+                        <tr class="bg-slate-50/50">
+                            <td class="p-4"><kbd class="kbd">Shift</kbd>+<kbd class="kbd">Enter</kbd></td>
+                            <td class="p-4 text-slate-600">Ny rad i anteckning</td>
+                            <td class="p-4 text-slate-500">När textfältet är i fokus</td>
+                        </tr>
+                        <tr>
+                            <td class="p-4"><kbd class="kbd">Enter</kbd></td>
+                            <td class="p-4 text-slate-600">Sparar redigering</td>
+                            <td class="p-4 text-slate-500">Under redigering av anteckning</td>
+                        </tr>
+                        <tr class="bg-slate-50/50">
+                            <td class="p-4"><kbd class="kbd">Esc</kbd></td>
+                            <td class="p-4 text-slate-600">Stänger popup / avbryter redigering</td>
+                            <td class="p-4 text-slate-500">Alltid</td>
+                        </tr>
+                        <tr>
+                            <td class="p-4"><kbd class="kbd">F</kbd></td>
+                            <td class="p-4 text-slate-600">Öppnar bildförhandsgranskning</td>
+                            <td class="p-4 text-slate-500">Musen hovrar över en bild</td>
+                        </tr>
+                        <tr class="bg-slate-50/50">
+                            <td class="p-4"><kbd class="kbd">F</kbd></td>
+                            <td class="p-4 text-slate-600">Helskärmsläge för bild</td>
+                            <td class="p-4 text-slate-500">När lightboxen är öppen</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- LIVSLÄNGD -->
+        <section id="livslangd" class="section">
+            <h2 class="text-2xl font-bold mb-2 flex items-center gap-2">
+                <i data-lucide="clock" class="w-6 h-6 text-indigo-500"></i>
+                Hur länge finns tavlan kvar?
+            </h2>
+            <p class="text-slate-600 mb-6">Flyktig Tavla är designad för tillfällig, kortlivad kommunikation. Här är vad du behöver veta om tavlans livslängd.</p>
+
+            <div class="space-y-4">
+                <div class="bg-green-50 border border-green-200 rounded-xl p-5">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i data-lucide="users" class="w-4 h-4 text-green-600"></i>
+                        <p class="font-semibold text-green-800">Medan någon är på tavlan</p>
+                    </div>
+                    <p class="text-sm text-green-700">Tavlan finns kvar och allt är synkroniserat. Data försvinner inte så länge minst en användare är inloggad.</p>
+                </div>
+
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-5">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i data-lucide="timer" class="w-4 h-4 text-amber-600"></i>
+                        <p class="font-semibold text-amber-800">När alla lämnat — 3-timmars fönster</p>
+                    </div>
+                    <p class="text-sm text-amber-700">När den sista användaren lämnar startar en <strong>3-timmars timer</strong>. Under den tiden finns tavlan kvar med all data. Du kan komma tillbaka och fortsätta — t.ex. efter lunch — utan att förlora något.</p>
+                </div>
+
+                <div class="bg-red-50 border border-red-200 rounded-xl p-5">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i data-lucide="trash-2" class="w-4 h-4 text-red-500"></i>
+                        <p class="font-semibold text-red-800">Efter 3 timmar</p>
+                    </div>
+                    <p class="text-sm text-red-700">Tavlan raderas automatiskt från serverns minne. All data är permanent borta. Det finns ingen återhämtning.</p>
+                </div>
+
+                <div class="bg-slate-100 border border-slate-200 rounded-xl p-5">
+                    <div class="flex items-center gap-2 mb-2">
+                        <i data-lucide="server-off" class="w-4 h-4 text-slate-500"></i>
+                        <p class="font-semibold text-slate-700">Om servern startas om</p>
+                    </div>
+                    <p class="text-sm text-slate-600">All data lagras enbart i serverns RAM. Vid omstart av servern försvinner alla tavlor omedelbart, oavsett hur länge sedan senaste aktivitet var.</p>
+                </div>
+            </div>
+
+            <div class="tip mt-6">
+                💡 <strong>Råd:</strong> Vill du spara information? Kopiera texten eller ladda ned filerna innan du avslutar sessionen.
+            </div>
+        </section>
+
+        <!-- FOOTER -->
+        <footer class="border-t border-slate-200 pt-8 pb-4 text-sm text-slate-400 text-center">
+            <p>Flyktig Tavla · Ingen data sparas · <a href="/" class="text-indigo-500 hover:underline">Tillbaka till appen</a></p>
+        </footer>
+
+    </main>
+</div>
+
+<script>
+    // Initialize Lucide icons
+    if (window.lucide) window.lucide.createIcons();
+</script>
+</body>
+</html>
